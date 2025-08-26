@@ -71,7 +71,7 @@ smart-hr-bot/
 │   ├── Dockerfile
 │   ├── docker-compose.yml
 │   ├── .env.example               # Env vars template
-│   └── alembic/ (optional)        # if using DB migrations
+│   └── alembic/        # if using DB migrations
 │
 ├── frontend/
 │   ├── public/

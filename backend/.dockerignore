@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+.venv/
+env/
+venv/
+ENV/
+
+# Logs
+app/logs/*.log
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Byte-compiled / optimized
+*.egg
+*.egg-info
+dist/
+build/
+
+# Docker
+*.pid
+*.tar
+*.sock
+
+# Env
+.env
