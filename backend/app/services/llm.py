@@ -1,4 +1,4 @@
-# app/services/llm_service.py
+# app/services/llm.py
 import google.generativeai as genai
 from app.core.config import settings
 import logging
@@ -62,3 +62,15 @@ class LLMService:
 
 # Singleton instance
 llm_service = LLMService()
+
+# --- Added wrapper function for backward compatibility ---
+async def ask_llm(prompt: str) -> str:
+    """
+    Wrapper function for generating a response using the LLM.
+    This allows other modules to do: from app.services.llm import ask_llm
+    """
+    return await llm_service.generate_response(prompt)
+
+
+async def run_interview(candidate_name: str, role: str) -> str:
+    return await llm_service.run_interview(candidate_name, role)

@@ -1,0 +1,50 @@
+# ========================
+# FastAPI & Server
+# ========================
+fastapi
+uvicorn[standard]
+PyMuPDF
+google-generativeai
+
+# ========================
+# Settings & Environment
+# ========================
+python-dotenv
+pydantic
+pydantic-settings
+loguru
+python-dateutil
+dateparser
+
+# ========================
+# Auth / Security
+# ========================
+python-jose[cryptography]
+passlib[bcrypt]
+cryptography
+
+# ========================
+# Requests / HTTP
+# ========================
+requests
+python-multipart
+
+# ========================
+# MongoDB (Async Driver)
+# ========================
+motor
+dnspython  # required for MongoDB Atlas
+
+# ========================
+# Email / Notifications
+# ========================
+google-api-python-client
+google-auth
+twilio
+
+# ========================
+# Testing
+# ========================
+pytest
+pytest-asyncio
+httpx

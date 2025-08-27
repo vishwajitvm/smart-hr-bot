@@ -3,45 +3,21 @@ version: "3.9"
 services:
   app:
     build: .
-    container_name: authive_app
+    container_name: smart_hr_bot_app
     restart: always
     env_file: .env
     volumes:
       - .:/app
     ports:
       - "8000:8000"
-    depends_on:
-      - mongodb
     networks:
-      - authive_network
+      - smart_hr_network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
 
-  mongodb:
-    image: mongo:6.0
-    container_name: authive_mongo
-    restart: always
-    ports:
-      - "27017:27017"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-root}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-password}
-    volumes:
-      - mongo_data:/data/db
-    networks:
-      - authive_network
-    healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-
-volumes:
-  mongo_data:
-
 networks:
-  authive_network:
+  smart_hr_network:
     driver: bridge

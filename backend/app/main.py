@@ -24,6 +24,10 @@ app.include_router(notifications.router, prefix="/notifications", tags=["Notific
 app.include_router(llm.router, prefix="/llm", tags=["LLM"])
 
 
+def health():
+    logger.info("Health check requested")
+    return {"status": "ok"}
+
 @app.get("/")
 def root():
     logger.info("Root API called")

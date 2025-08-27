@@ -1,6 +1,8 @@
 # app/core/config.py
 import os
-from pydantic import BaseSettings
+# from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
+from functools import lru_cache
 
 class Settings(BaseSettings):
     # ========================
@@ -50,6 +52,7 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str
     GEMINI_MODEL: str = "gemini-2.0-flash"   # default, can override via .env
     VECTORSTORE_PATH: str = "./vectorstore"
+    EMBEDDING_MODEL_NAME: str = "gemini-embedding-001"
     VECTOR_DIM: int = 768
 
     # ========================

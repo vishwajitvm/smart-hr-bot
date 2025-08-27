@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from app.services.llm_service import llm_service
+from app.services.llm  import llm_service
 
 router = APIRouter(prefix="/llm", tags=["LLM"])
 
