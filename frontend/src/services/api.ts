@@ -4,9 +4,7 @@ import type { AxiosResponse } from "axios";
 // ✅ Base Axios instance
 const api = axios.create({
   baseURL: "http://localhost:8000/api",
-  headers: {
-    "Content-Type": "application/json",
-  },
+  // ❌ removed default Content-Type, axios will set automatically
 });
 
 /* -------------------------------------------------------------------------- */
@@ -20,7 +18,8 @@ export const uploadResume = async (
   file: File
 ): Promise<AxiosResponse<any>> => {
   const formData = new FormData();
-  formData.append("resume", file);
+  // ✅ must match backend field name (use "file")
+  formData.append("file", file);
 
   return api.post("/resume/upload", formData, {
     headers: { "Content-Type": "multipart/form-data" },
@@ -33,7 +32,9 @@ export const uploadResume = async (
 export const submitCandidateDetails = async (
   data: Record<string, any>
 ): Promise<AxiosResponse<any>> => {
-  return api.post("/resume/submit", data);
+  return api.post("/resume/submit", data, {
+    headers: { "Content-Type": "application/json" },
+  });
 };
 
 /**
