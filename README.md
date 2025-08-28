@@ -18,22 +18,22 @@ smart-hr-bot/
 │   │   │   ├── __init__.py
 │   │   │   ├── auth.py            # Google, Keka, MS SSO routes
 │   │   │   ├── users.py           # User CRUD APIs
-│   │   │   ├── resume.py          # Resume parsing APIs
+│   │   │   ├── resume.py          # Resume upload + parsing APIs
 │   │   │   ├── interview.py       # AI interview simulation endpoints
 │   │   │   ├── calendar.py        # Google Calendar integration
 │   │   │   ├── notifications.py   # Email/SMS notifications
 │   │   │
-│   │   ├── chains/ (or workflows/) # AI pipelines
+│   │   ├── chains/                # AI pipelines / workflows
 │   │   │   ├── __init__.py
 │   │   │   ├── resume_parser.py   # LLM + PDF parsing
 │   │   │   ├── interview_chain.py # Simulated interview flow
-│   │   │   ├── evaluation.py      # Sentiment/score evaluation
+│   │   │   ├── evaluation.py      # Candidate evaluation scoring
 │   │   │
 │   │   ├── services/              # Business logic + integrations
 │   │   │   ├── __init__.py
 │   │   │   ├── vectorstore.py     # FAISS / Pinecone storage
 │   │   │   ├── llm.py             # Gemini / OpenAI client wrappers
-│   │   │   ├── pdf_service.py     # Resume PDF extraction
+│   │   │   ├── pdf_service.py     # Resume PDF/DOCX extraction
 │   │   │   ├── calendar_service.py# Google Calendar API wrapper
 │   │   │   ├── notification_service.py # Email, Twilio/Kaleyra SMS
 │   │   │   ├── auth_service.py    # OAuth2, JWT utils
@@ -49,7 +49,7 @@ smart-hr-bot/
 │   │   │   ├── __init__.py
 │   │   │   ├── config.py          # Env settings
 │   │   │   ├── logger.py          # Logging setup
-│   │   │   ├── security.py        # Password rules, JWT
+│   │   │   ├── security.py        # Password rules, JWT utils
 │   │   │   ├── db.py              # Mongo/Postgres init
 │   │   │
 │   │   ├── utils/                 # Helper functions
@@ -71,36 +71,42 @@ smart-hr-bot/
 │   ├── Dockerfile
 │   ├── docker-compose.yml
 │   ├── .env.example               # Env vars template
-│   └── alembic/        # if using DB migrations
+│   └── alembic/                   # DB migrations (if using SQL DB)
 │
 ├── frontend/
 │   ├── public/
+│   │   └── index.html
+│   │
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── Navbar.jsx
-│   │   │   ├── Sidebar.jsx
-│   │   │   ├── InterviewUI.jsx
-│   │   │   ├── ResumeUpload.jsx
+│   │   │   ├── Navbar.tsx
+│   │   │   ├── Sidebar.tsx
+│   │   │   ├── InterviewUI.tsx
+│   │   │   ├── ResumeUpload.tsx
+│   │   │   └── css/
+│   │   │       ├── Navbar.css
+│   │   │       ├── ResumeUpload.css
+│   │   │       └── Sidebar.css
 │   │   │
 │   │   ├── pages/
-│   │   │   ├── Home.jsx
-│   │   │   ├── Login.jsx
-│   │   │   ├── Dashboard.jsx
-│   │   │   ├── Interviews.jsx
-│   │   │   ├── Calendar.jsx
+│   │   │   ├── Home.tsx
+│   │   │   ├── Login.tsx
+│   │   │   ├── Dashboard.tsx
+│   │   │   ├── Interviews.tsx
+│   │   │   ├── Calendar.tsx
 │   │   │
 │   │   ├── services/
-│   │   │   ├── api.js             # Axios wrapper
-│   │   │   ├── auth.js            # Auth calls
-│   │   │   ├── resume.js          # Resume parsing calls
-│   │   │   ├── interview.js       # Interview simulation calls
+│   │   │   ├── api.ts             # ✅ Single Axios service (all APIs here)
 │   │   │
-│   │   ├── App.jsx
-│   │   ├── index.jsx
+│   │   ├── App.tsx
+│   │   ├── index.tsx
+│   │   ├── vite-env.d.ts
+│   │   └── main.css
 │   │
 │   ├── package.json
-│   ├── vite.config.js
-│   └── tailwind.config.js
+│   ├── tsconfig.json
+│   ├── vite.config.ts
+│   └── tailwind.config.js (optional if using Tailwind)
 │
 ├── docs/
 │   ├── architecture.md
@@ -178,28 +184,56 @@ smart-hr-bot/
 
 ## ⚡ Setup Instructions
 
-### Backend
+## ⚙️ Backend Setup (FastAPI)
+
+### 1️⃣ Create virtual environment
 ```bash
 cd backend
-cp .env.example .env
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
+python -m venv venv
+source venv/bin/activate   # (Linux/Mac)
+venv\Scripts\activate    # (Windows)
 ```
 
-### Frontend
+### 2️⃣ Install dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 3️⃣ Run server
+```bash
+uvicorn app.main:app --reload
+```
+
+API runs at: **http://localhost:8000**
+
+Docs: **http://localhost:8000/docs**
+
+---
+
+## 🎨 Frontend Setup (React + Vite + TypeScript)
+
+### 1️⃣ Install dependencies
 ```bash
 cd frontend
 npm install
+```
+
+### 2️⃣ Run dev server
+```bash
 npm run dev
 ```
 
-### Docker (Full stack)
+Frontend runs at: **http://localhost:5173**
+
+---
+
+## 🐳 Docker Setup
+
+Run both frontend + backend using Docker Compose:
+
 ```bash
 docker-compose up --build
 ```
 
 ---
 
-## 📄 License
-
-MIT License. Free to use & modify.  
