@@ -7,6 +7,7 @@ function Navbar() {
       <h1 className="logo">Smart HR Bot</h1>
       <ul className="nav-links">
         <li><Link to="/">Home</Link></li>
+        <li><Link to="/resume-upload">Upload Resume</Link></li>
         <li><Link to="/login">Login</Link></li>
         <li><Link to="/dashboard">Dashboard</Link></li>
       </ul>
