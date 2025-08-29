@@ -5,6 +5,7 @@ fastapi
 uvicorn[standard]
 PyMuPDF
 google-generativeai
+pdfminer.six==20221105
 
 # ========================
 # Settings & Environment
@@ -58,3 +59,19 @@ pymongo
 # cryptography
 # ========================
 cryptography
+
+# ========================
+# PyPDF2 → PDF
+# docx2txt → DOCX
+# textract → Fallback parser (handles DOC, RTF, ODT, TXT, PPTX, etc.)
+# ========================
+python-docx
+PyPDF2
+docx2txt
+
+
+langchain
+langchain-core
+langchain-community
+langchain-google-genai
+google-ai-generativelanguage

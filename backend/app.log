@@ -1,0 +1,32 @@
+2025-08-29 23:15:47,230 [INFO] ✅ Gemini LLM initialized with model: gemini-2.0-flash
+2025-08-29 23:16:00,872 - INFO - resume_api - Received resume upload from 172.18.0.1
+2025-08-29 23:16:00,872 [INFO] Received resume upload from 172.18.0.1
+2025-08-29 23:16:01,844 - INFO - resume_api - Stored file in GridFS: 68b234b03ecd98289a7c6216
+2025-08-29 23:16:01,844 [INFO] Stored file in GridFS: 68b234b03ecd98289a7c6216
+2025-08-29 23:16:06,175 [INFO] Raw LLM output: ```json
+{
+  "name": "Isha Thakur",
+  "email": "thakurisha3456@gmail.com",
+  "phone": "7428716305",
+  "location": "New Delhi , India",
+  "skills": [
+    "Microsoft Office",
+    "Digital Marketing",
+    "Team Leadership",
+    "Customer Service Excellence",
+    "Conflict Resolution",
+    "Research Skills",
+    "Email Management",
+    "Data Visualization",
+    "Effective Communication",
+    "Problem-Solving Abilities",
+    "Project Management",
+    "Customer Relationship Management",
+    "Presentation Skills",
+    "Interpersonal Skills"
+  ],
+  "experience": "Motivated and dedicated professional with experience in operations, customer experience, sales & marketing. Experience includes internships at Bindal Transolutions Pvt Ltd and Senior Executive Operations-Cruise Consultant at TBO Tek Limited. Led teams, managed customer requirements, and contributed to process improvements."
+}
+```
+2025-08-29 23:16:06,180 - INFO - resume_api - Upload success response: {'message': 'Resume uploaded & parsed successfully', 'file_id': '68b234b03ecd98289a7c6216', 'download_url': '/api/resume/68b234b03ecd98289a7c6216', 'name': 'Isha Thakur', 'email': 'thakurisha3456@gmail.com', 'phone': '7428716305', 'location': 'New Delhi , India', 'skills': ['Microsoft Office', 'Digital Marketing', 'Team Leadership', 'Customer Service Excellence', 'Conflict Resolution', 'Research Skills', 'Email Management', 'Data Visualization', 'Effective Communication', 'Problem-Solving Abilities', 'Project Management', 'Customer Relationship Management', 'Presentation Skills', 'Interpersonal Skills'], 'experience': 'Motivated and dedicated professional with experience in operations, customer experience, sales & marketing. Experience includes internships at Bindal Transolutions Pvt Ltd and Senior Executive Operations-Cruise Consultant at TBO Tek Limited. Led teams, managed customer requirements, and contributed to process improvements.'}
+2025-08-29 23:16:06,180 [INFO] Upload success response: {'message': 'Resume uploaded & parsed successfully', 'file_id': '68b234b03ecd98289a7c6216', 'download_url': '/api/resume/68b234b03ecd98289a7c6216', 'name': 'Isha Thakur', 'email': 'thakurisha3456@gmail.com', 'phone': '7428716305', 'location': 'New Delhi , India', 'skills': ['Microsoft Office', 'Digital Marketing', 'Team Leadership', 'Customer Service Excellence', 'Conflict Resolution', 'Research Skills', 'Email Management', 'Data Visualization', 'Effective Communication', 'Problem-Solving Abilities', 'Project Management', 'Customer Relationship Management', 'Presentation Skills', 'Interpersonal Skills'], 'experience': 'Motivated and dedicated professional with experience in operations, customer experience, sales & marketing. Experience includes internships at Bindal Transolutions Pvt Ltd and Senior Executive Operations-Cruise Consultant at TBO Tek Limited. Led teams, managed customer requirements, and contributed to process improvements.'}
