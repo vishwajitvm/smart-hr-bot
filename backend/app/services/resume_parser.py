@@ -27,15 +27,39 @@ class ResumeParserService:
         """Parse resume text into structured JSON"""
         prompt = f"""
         You are a professional Resume Parser.
-        Extract ONLY this JSON (no text, no markdown):
+        Extract ONLY valid JSON (no text, no markdown).
 
+        Required schema:
         {{
           "name": "<full name>",
           "email": "<email address>",
           "phone": "<phone number>",
-          "location": "<city/country if available>",
+          "location": "<city, country>",
+          "years_of_experience": "<number of years if available>",
           "skills": ["skill1", "skill2", "skill3"],
-          "experience": "<summary of experience>"
+          "experience_summary": "<summary of experience>",
+          "education": [
+            {{
+              "degree": "<degree>",
+              "institution": "<school/university>",
+              "year": "<year if available>"
+            }}
+          ],
+          "projects": [
+            {{
+              "title": "<project name>",
+              "description": "<short description>",
+              "technologies": ["tech1", "tech2"]
+            }}
+          ],
+          "certifications": ["certification1", "certification2"],
+          "languages": ["English", "French", "Spanish"],
+          "interests": ["interest1", "interest2"],
+          "hobbies": ["hobby1", "hobby2"],
+          "role_specific_highlights": [
+            "<highlight 1>",
+            "<highlight 2>"
+          ]
         }}
 
         Resume text:
@@ -71,6 +95,14 @@ class ResumeParserService:
                 "email": "",
                 "phone": "",
                 "location": "",
+                "years_of_experience": "",
                 "skills": [],
-                "experience": ""
+                "experience_summary": "",
+                "education": [],
+                "projects": [],
+                "certifications": [],
+                "languages": [],
+                "interests": [],
+                "hobbies": [],
+                "role_specific_highlights": []
             }
