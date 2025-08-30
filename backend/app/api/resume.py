@@ -20,7 +20,7 @@ parser = ResumeParserService()
 logger = logging.getLogger("resume_api")
 logger.setLevel(logging.INFO)
 handler = RotatingFileHandler(
-    "app.log", maxBytes=5 * 1024 * 1024, backupCount=3, encoding="utf-8"
+    "logs/app.log", maxBytes=5 * 1024 * 1024, backupCount=3, encoding="utf-8"
 )
 formatter = logging.Formatter(
     "%(asctime)s - %(levelname)s - %(name)s - %(message)s"
