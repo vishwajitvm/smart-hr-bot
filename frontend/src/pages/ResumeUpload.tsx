@@ -8,10 +8,13 @@ import {
 
 interface ResumeData {
   name: string;
-  email: string;
-  location: string;
-  experience: string;
+  email: string | null;
+  phone: string | null;
+  location: string | null;
+  years_of_experience: string;
   skills: string[];
+  interests: string[];
+  experience_summary: string;
   position: string;
 }
 
@@ -19,13 +22,17 @@ const ResumeUpload: React.FC = () => {
   const [resumeData, setResumeData] = useState<ResumeData>({
     name: "",
     email: "",
+    phone: "",
     location: "",
-    experience: "",
+    years_of_experience: "",
     skills: [],
+    interests: [],
+    experience_summary: "",
     position: "",
   });
 
   const [file, setFile] = useState<File | null>(null);
+  const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [positions, setPositions] = useState<string[]>([]);
 
@@ -39,7 +46,6 @@ const ResumeUpload: React.FC = () => {
         setPositions(response.data || []);
       } catch (error) {
         console.error("Failed to fetch job positions:", error);
-        // fallback if API fails
         setPositions([
           "Software Engineer",
           "Frontend Developer",
@@ -55,9 +61,20 @@ const ResumeUpload: React.FC = () => {
   /* -------------------------------------------------------------------------- */
   /*                               File Handling                                */
   /* -------------------------------------------------------------------------- */
+  const handleFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const uploadedFile = e.dataTransfer.files[0];
+      setFile(uploadedFile);
+      setFilePreviewUrl(URL.createObjectURL(uploadedFile));
+    }
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+      const uploadedFile = e.target.files[0];
+      setFile(uploadedFile);
+      setFilePreviewUrl(URL.createObjectURL(uploadedFile));
     }
   };
 
@@ -70,10 +87,15 @@ const ResumeUpload: React.FC = () => {
     try {
       setLoading(true);
       const response = await uploadResume(file);
+
       setResumeData((prev) => ({
         ...prev,
-        ...response.data, // backend should return {name, email, skills...}
+        ...response.data, // fill with API response
       }));
+
+      if (response.data.download_url) {
+        setFilePreviewUrl(response.data.download_url);
+      }
     } catch (error) {
       console.error("Error uploading resume:", error);
       alert("Failed to parse resume.");
@@ -97,11 +119,27 @@ const ResumeUpload: React.FC = () => {
     }));
   };
 
-  const handleSkillsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+  const handleTagInput = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    field: "skills" | "interests"
+  ) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const value = (e.target as HTMLInputElement).value.trim();
+      if (value && !resumeData[field].includes(value)) {
+        setResumeData((prev) => ({
+          ...prev,
+          [field]: [...prev[field], value],
+        }));
+        (e.target as HTMLInputElement).value = "";
+      }
+    }
+  };
+
+  const removeTag = (field: "skills" | "interests", index: number) => {
     setResumeData((prev) => ({
       ...prev,
-      skills: value.split(",").map((s) => s.trim()),
+      [field]: prev[field].filter((_, i) => i !== index),
     }));
   };
 
@@ -123,112 +161,207 @@ const ResumeUpload: React.FC = () => {
   /*                                    JSX                                     */
   /* -------------------------------------------------------------------------- */
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white shadow rounded">
-      <h2 className="text-xl font-bold mb-4">Resume Upload & Application</h2>
-
-      {/* File Upload */}
-      <div className="mb-4">
-        <input
-          type="file"
-          accept=".pdf,.doc,.docx"
-          onChange={handleFileChange}
-          className="mb-2"
-        />
-        <button
-          onClick={handleUpload}
-          disabled={loading}
-          className="bg-blue-600 text-white px-4 py-2 rounded"
+    <div className="resume-container">
+      <div className="resume-grid">
+        {/* Left Side: Upload & Preview */}
+        <div
+          className="upload-box"
+          onDrop={handleFileDrop}
+          onDragOver={(e) => e.preventDefault()}
         >
-          {loading ? "Parsing..." : "Upload & Autofill"}
-        </button>
+          {!file ? (
+            <div>
+              {/* Upload Icon */}
+              <div style={{ fontSize: "2.5rem", color: "#6366f1", marginBottom: "1rem" }}>
+                📄
+              </div>
+
+              <p className="upload-text">Drag & Drop resume here</p>
+
+              {/* Hidden File Input */}
+              <input
+                id="fileInput"
+                type="file"
+                accept=".pdf,.doc,.docx"
+                onChange={handleFileChange}
+                style={{ display: "none" }}
+              />
+
+              {/* Choose File Button */}
+              <label htmlFor="fileInput" className="btn-secondary" style={{ cursor: "pointer" }}>
+                Choose File
+              </label>
+            </div>
+          ) : (
+            <div className="file-preview">
+              <p>📄 {file.name}</p>
+
+              {/* File Preview link */}
+              {filePreviewUrl && (
+                <a
+                  href={filePreviewUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-secondary"
+                >
+                  Preview File
+                </a>
+              )}
+
+              {/* ✅ Upload & Autofill Button */}
+              <button
+                onClick={handleUpload}
+                disabled={loading}
+                className="btn-primary"
+                style={{ marginTop: "1rem", width: "100%" }}
+              >
+                {loading ? "Parsing..." : "Upload & Autofill"}
+              </button>
+            </div>
+          )}
+        </div>
+
+
+
+
+        {/* Right Side: Form */}
+        <form className="form-box" onSubmit={handleSubmit}>
+          <h2 className="form-title">Application Details</h2>
+
+          {/* Position */}
+          <div className="form-group">
+            <label>Position Applying For</label>
+            <select
+              name="position"
+              value={resumeData.position}
+              onChange={handleChange}
+            >
+              <option value="">Select Position</option>
+              {positions.map((pos) => (
+                <option key={pos} value={pos}>
+                  {pos}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Name */}
+          <div className="form-group">
+            <label>Full Name</label>
+            <input
+              type="text"
+              name="name"
+              value={resumeData.name || ""}
+              onChange={handleChange}
+            />
+          </div>
+
+          {/* Email */}
+          <div className="form-group">
+            <label>Email</label>
+            <input
+              type="email"
+              name="email"
+              value={resumeData.email || ""}
+              onChange={handleChange}
+            />
+          </div>
+
+          {/* Phone */}
+          <div className="form-group">
+            <label>Phone</label>
+            <input
+              type="text"
+              name="phone"
+              value={resumeData.phone || ""}
+              onChange={handleChange}
+            />
+          </div>
+
+          {/* Location */}
+          <div className="form-group">
+            <label>Location</label>
+            <input
+              type="text"
+              name="location"
+              value={resumeData.location || ""}
+              onChange={handleChange}
+            />
+          </div>
+
+          {/* Years of Experience */}
+          <div className="form-group">
+            <label>Years of Experience</label>
+            <input
+              type="number"
+              name="years_of_experience"
+              value={resumeData.years_of_experience || ""}
+              onChange={handleChange}
+            />
+          </div>
+
+          {/* Skills (Tag Input) */}
+          <div className="form-group">
+            <label>Skills</label>
+            <div className="tag-input">
+              {resumeData.skills.map((skill, i) => (
+                <span key={i} className="tag">
+                  {skill}
+                  <button
+                    type="button"
+                    onClick={() => removeTag("skills", i)}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+              <input
+                type="text"
+                placeholder="Add a skill & press Enter"
+                onKeyDown={(e) => handleTagInput(e, "skills")}
+              />
+            </div>
+          </div>
+
+          {/* Interests (Tag Input) */}
+          <div className="form-group">
+            <label>Interests</label>
+            <div className="tag-input">
+              {resumeData.interests.map((interest, i) => (
+                <span key={i} className="tag">
+                  {interest}
+                  <button
+                    type="button"
+                    onClick={() => removeTag("interests", i)}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+              <input
+                type="text"
+                placeholder="Add interest & press Enter"
+                onKeyDown={(e) => handleTagInput(e, "interests")}
+              />
+            </div>
+          </div>
+
+          {/* Summary */}
+          <div className="form-group">
+            <label>Professional Summary</label>
+            <textarea
+              name="experience_summary"
+              value={resumeData.experience_summary || ""}
+              onChange={handleChange}
+            ></textarea>
+          </div>
+
+          {/* Submit */}
+          <button type="submit" className="btn-success">
+            Submit Application
+          </button>
+        </form>
       </div>
-
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Dropdown for Position */}
-        <div>
-          <label className="block font-medium">Position Applying For</label>
-          <select
-            name="position"
-            value={resumeData.position}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-          >
-            <option value="">Select Position</option>
-            {positions.map((pos) => (
-              <option key={pos} value={pos}>
-                {pos}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Name */}
-        <div>
-          <label className="block font-medium">Full Name</label>
-          <input
-            type="text"
-            name="name"
-            value={resumeData.name}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-          />
-        </div>
-
-        {/* Email */}
-        <div>
-          <label className="block font-medium">Email</label>
-          <input
-            type="email"
-            name="email"
-            value={resumeData.email}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-          />
-        </div>
-
-        {/* Location */}
-        <div>
-          <label className="block font-medium">Location</label>
-          <input
-            type="text"
-            name="location"
-            value={resumeData.location}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-          />
-        </div>
-
-        {/* Experience */}
-        <div>
-          <label className="block font-medium">Experience</label>
-          <textarea
-            name="experience"
-            value={resumeData.experience}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-          ></textarea>
-        </div>
-
-        {/* Skills */}
-        <div>
-          <label className="block font-medium">Skills (comma separated)</label>
-          <input
-            type="text"
-            value={resumeData.skills.join(", ")}
-            onChange={handleSkillsChange}
-            className="w-full border p-2 rounded"
-          />
-        </div>
-
-        {/* Submit */}
-        <button
-          type="submit"
-          className="bg-green-600 text-white px-4 py-2 rounded"
-        >
-          Submit Application
-        </button>
-      </form>
     </div>
   );
 };
