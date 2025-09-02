@@ -8,6 +8,7 @@ function Navbar() {
       <ul className="nav-links">
         <li><Link to="/">Home</Link></li>
         <li><Link to="/resume-upload">Upload Resume</Link></li>
+        <li><Link to="/job-openings">Job Openings</Link></li>
         <li><Link to="/login">Login</Link></li>
         <li><Link to="/dashboard">Dashboard</Link></li>
       </ul>

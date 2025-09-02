@@ -1,0 +1,182 @@
+body {
+  font-family: "Inter", sans-serif;
+  background-color: #f9fafb;
+  margin: 0;
+  padding: 0;
+}
+
+.job-page {
+  display: flex;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.job-card {
+  width: 100%;
+  max-width: 1000px;      /* professional centered form */
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  padding: 40px;
+}
+
+.job-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.job-form {
+  display: grid;
+  gap: 20px;
+}
+
+/* Labels */
+.job-form label {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #374151;
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* Inputs, selects, textarea */
+.job-form input,
+.job-form select,
+.job-form textarea {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 0.95rem;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  /* ✅ Always white background */
+  background-color: #ffffff !important;
+  color: #111827 !important;
+}
+
+/* Force selects and dropdowns to be white */
+.job-form select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-color: #ffffff !important;
+  color: #111827 !important;
+}
+
+/* Placeholder color */
+.job-form input::placeholder,
+.job-form textarea::placeholder {
+  color: #9ca3af;
+}
+
+/* Focus state */
+.job-form input:focus,
+.job-form select:focus,
+.job-form textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+  outline: none;
+  background-color: #ffffff !important;
+  color: #111827 !important;
+}
+
+/* Grid rows */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Buttons */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.btn-primary {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: #1d4ed8;
+}
+
+.btn-secondary {
+  background-color: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  background-color: #e5e7eb;
+}
+
+/* Quill editor */
+.ql-container {
+  min-height: 180px;
+  font-size: 1rem;
+  padding: 0.75rem;
+  background-color: #ffffff !important;
+  color: #111827 !important;
+  border-radius: 0 0 6px 6px;
+  border: 1px solid #dbdbdb;
+}
+
+.ql-toolbar {
+  margin-bottom: 0.75rem;
+  border-radius: 6px 6px 0 0;
+  background-color: #ffffff !important;
+}
+
+/* Space between editors */
+.box {
+  padding: 1.25rem;
+}
+
+.ai-button {
+  position: absolute;
+  right: 8px;
+  top: 6px;
+  background: linear-gradient(90deg, #5f5cff, #ff00cc);
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.ai-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ai-button:hover:not(:disabled) {
+  opacity: 0.9;
+}

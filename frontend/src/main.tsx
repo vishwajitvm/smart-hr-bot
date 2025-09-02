@@ -5,6 +5,8 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App.tsx";
 import "./index.css"; // global CSS
 import "bulma/css/bulma.min.css";
+// import ReactQuill from "react-quill";
+// import "react-quill/dist/quill.snow.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

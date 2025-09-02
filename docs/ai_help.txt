@@ -1,0 +1,61 @@
+⚡ So the AI will auto-fill:
+
+    Department / Team
+    Work Mode
+    Employment Type
+    Experience Level
+    Salary Range (suggested)
+    Job Description
+    Responsibilities
+    Requirements
+    Benefits / Perks
+
+And the manual fields remain:
+
+    Hiring Manager
+    Location
+    No. of Openings
+    Application Deadline
+    Status
+    Visibility
+    Application Method
+
+
+
+
+
+✅ Fields we can try to auto-fill (AI-assisted)
+
+(based on the Job Title input + context)
+
+Department / Team → infer common department for the role.
+
+Hiring Manager → ❌ usually needs manual entry (specific person).
+
+Location → can guess if role is commonly remote/onsite, but better manual.
+
+Work Mode → AI can suggest Remote / Onsite / Hybrid.
+
+Employment Type → AI can suggest (Full-time / Part-time / Contract).
+
+Experience Level → AI can classify (Entry / Mid / Senior).
+
+No. of Openings → ❌ manual (business-specific).
+
+Salary Range → AI can generate a suggested range (optional, editable).
+
+Application Deadline → ❌ manual (company-specific).
+
+Job Description → AI-generated.
+
+Responsibilities → AI-generated.
+
+Requirements → AI-generated.
+
+Benefits / Perks → AI can suggest generic perks, editable later.
+
+Status (Draft/Active) → ❌ manual.
+
+Visibility (Public/Internal) → ❌ manual.
+
+Application Method → ❌ manual.

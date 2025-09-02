@@ -79,4 +79,14 @@ export const fetchJobPositions = async (): Promise<AxiosResponse<any>> => {
   return api.get("/jobs/positions");
 };
 
+/* -------------------------------------------------------------------------- */
+/*                 Generate job details with AI                               */
+/* -------------------------------------------------------------------------- */
+export const generateJobDetails = async (title: string) => {
+  return api.post("/jobs/generate", { title }, {
+    headers: { "Content-Type": "application/json" },
+  });
+};
+
+
 export default api;
