@@ -1,49 +1,82 @@
 import axios from "axios";
 import type { AxiosResponse } from "axios";
 
-// ✅ Base Axios instance
+// Base Axios instance
 const api = axios.create({
-  baseURL: "http://localhost:8000/api",
-  // ❌ removed default Content-Type, axios will set automatically
+  baseURL: "/api",
 });
 
 /* -------------------------------------------------------------------------- */
-/*                                API METHODS                                 */
+/*                                Candidate APIs                              */
 /* -------------------------------------------------------------------------- */
 
-/**
- * Upload a resume file (PDF, DOCX, etc.)
- */
 export const uploadResume = async (
   file: File
 ): Promise<AxiosResponse<any>> => {
   const formData = new FormData();
-  // ✅ must match backend field name (use "file")
-  formData.append("file", file);
-
+  formData.append("file", file); // must match backend field name
   return api.post("/resume/upload", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
 };
 
-/**
- * Submit candidate details (autofilled + user edited form)
- */
-export const submitCandidateDetails = async (
-  data: Record<string, any>
-): Promise<AxiosResponse<any>> => {
-  return api.post("/resume/submit", data, {
+// export const submitCandidateDetails = async (
+//   data: Record<string, any>
+// ): Promise<AxiosResponse<any>> => {
+//   return api.post("/candidates", data, {
+//     headers: { "Content-Type": "application/json" },
+//   });
+// };
+
+// services/api.ts
+export const submitCandidateDetails = async (data: Record<string, any>) => {
+  return api.post("/candidates/", data, {
     headers: { "Content-Type": "application/json" },
   });
 };
 
-/**
- * Fetch available job positions
- */
-export const fetchJobPositions = async (): Promise<AxiosResponse<any>> => {
-  return api.get("/jobs/positions");
+
+
+
+
+
+export const fetchAllCandidates = async (): Promise<AxiosResponse<any>> => {
+  return api.get("/candidates");
+};
+
+export const fetchCandidateById = async (
+  id: string
+): Promise<AxiosResponse<any>> => {
+  return api.get(`/candidates/${id}`);
+};
+
+export const updateCandidate = async (
+  id: string,
+  data: Record<string, any>
+): Promise<AxiosResponse<any>> => {
+  return api.put(`/candidates/${id}`, data, {
+    headers: { "Content-Type": "application/json" },
+  });
+};
+
+export const deleteCandidate = async (
+  id: string
+): Promise<AxiosResponse<any>> => {
+  return api.delete(`/candidates/${id}`);
+};
+
+export const inactivateCandidate = async (
+  id: string
+): Promise<AxiosResponse<any>> => {
+  return api.patch(`/candidates/${id}/inactivate`);
 };
 
 /* -------------------------------------------------------------------------- */
+/*                                   Jobs APIs                                */
+/* -------------------------------------------------------------------------- */
+
+export const fetchJobPositions = async (): Promise<AxiosResponse<any>> => {
+  return api.get("/jobs/positions");
+};
 
 export default api;

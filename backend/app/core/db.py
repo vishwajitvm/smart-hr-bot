@@ -16,6 +16,7 @@ users_collection = db["users"]
 chatlogs_collection = db["chat_logs"]
 tokens_collection = db["tokens"]
 keka_tokens_collection = db["keka_tokens"]
+candidates_collection = db["candidates"]
 
 # Encryption helpers
 def encrypt_token(token: str) -> str:

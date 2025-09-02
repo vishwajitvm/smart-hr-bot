@@ -51,6 +51,8 @@ async def upload_resume(request: Request, file: UploadFile = File(...)):
             "message": "Resume uploaded & parsed successfully",
             "file_id": str(file_id),
             "download_url": f"/api/resume/{str(file_id)}",
+            "resume_id": str(file_id),
+            "resume_url": f"/api/resume/{str(file_id)}",
             **parsed_data
         }
         logger.info(f"Upload success response: {response}")

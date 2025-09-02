@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.logger import setup_logger
-from app.api import auth, users, resume, interview, calendar, notifications, llm
+from app.api import auth, users, resume, interview, calendar, notifications, llm, candidates
 
 # Setup logger
 logger = setup_logger()
@@ -15,10 +15,15 @@ app = FastAPI(
     description="AI-powered Smart HR Bot backend"
 )
 
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+
 # CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],  # allow all HTTP methods (GET, POST, PUT, DELETE, etc.)
     allow_headers=["*"],  # allow all headers
@@ -32,6 +37,7 @@ app.include_router(interview.router, prefix="/api/interview", tags=["Interview"]
 app.include_router(calendar.router, prefix="/api/calendar", tags=["Calendar"])
 app.include_router(notifications.router, prefix="/api/notifications", tags=["Notifications"])
 app.include_router(llm.router, prefix="/api/llm", tags=["LLM"])
+app.include_router(candidates.router, prefix="/api/candidates", tags=["Candidates"])
 
 @app.get("/api/health")
 def health():

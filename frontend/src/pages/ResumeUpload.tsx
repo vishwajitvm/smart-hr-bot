@@ -16,6 +16,8 @@ interface ResumeData {
   interests: string[];
   experience_summary: string;
   position: string;
+  resume_id: string | null;
+  resume_url: string | null;
 }
 
 const ResumeUpload: React.FC = () => {
@@ -29,6 +31,9 @@ const ResumeUpload: React.FC = () => {
     interests: [],
     experience_summary: "",
     position: "",
+    resume_id: "",
+    resume_url: ""
+
   });
 
   const [file, setFile] = useState<File | null>(null);
@@ -146,16 +151,32 @@ const ResumeUpload: React.FC = () => {
   /* -------------------------------------------------------------------------- */
   /*                                 Submit Form                                */
   /* -------------------------------------------------------------------------- */
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await submitCandidateDetails(resumeData);
-      alert("Application submitted successfully!");
-    } catch (error) {
-      console.error("Error submitting application:", error);
-      alert("Failed to submit application.");
-    }
-  };
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  try {
+    const payload = {
+      ...resumeData,
+      email: resumeData.email || "",
+      phone: resumeData.phone || "",
+      location: resumeData.location || "",
+      years_of_experience: resumeData.years_of_experience || "",
+      skills: resumeData.skills || [],
+      interests: resumeData.interests || [],
+      experience_summary: resumeData.experience_summary || "",
+      position: resumeData.position || "",
+      resume_id: resumeData.resume_id || null,   // ✅ ensure sent
+      resume_url: resumeData.resume_url || null, // ✅ ensure sent
+    };
+
+    await submitCandidateDetails(payload);
+    alert("Application submitted successfully!");
+  } catch (error) {
+    console.error("Error submitting application:", error);
+    alert("Failed to submit application.");
+  }
+};
+
+
 
   /* -------------------------------------------------------------------------- */
   /*                                    JSX                                     */
