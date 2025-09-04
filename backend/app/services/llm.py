@@ -1,9 +1,15 @@
-# app/services/llm.py
 import google.generativeai as genai
 from app.core.config import settings
+from app.models.job_ai import JobAIRequest, JobAISuggestion
+from app.chains.job_prompt import job_prompt
 import logging
+import uuid
+import json
+import re 
+from fastapi import HTTPException 
 
 logger = logging.getLogger(__name__)
+
 
 class LLMService:
     def __init__(self):
@@ -18,10 +24,10 @@ class LLMService:
 
     async def generate_response(self, prompt: str) -> str:
         """
-        Generate a text response from Gemini given a prompt.
+        Generate a plain text response from Gemini given a prompt.
         """
         try:
-            logger.debug(f"Gemini request prompt: {prompt[:200]}...")  # Log first 200 chars
+            logger.debug(f"Gemini request prompt: {prompt[:200]}...")
             response = self.model.generate_content(prompt)
 
             if response and response.candidates:
@@ -59,18 +65,83 @@ class LLMService:
         except Exception as e:
             logger.error(f"❌ Error in Gemini generate_chat: {str(e)}")
             return "An error occurred while processing chat."
+        
+
+async def run_interview(candidate_name: str, role: str) -> str:
+    """
+    Generate a simple interview starter message for a candidate.
+    """
+    prompt = f"""
+You are an interviewer. Start a professional interview with {candidate_name} for the role of {role}.
+Return only the first interviewer question, not the entire interview.
+"""
+    try:
+        response = llm_service.model.generate_content(prompt)
+
+        if not response or not response.candidates:
+            raise ValueError("Empty response from Gemini")
+
+        text = response.candidates[0].content.parts[0].text
+        return text.strip()
+    except Exception as e:
+        logger.error(f"❌ Error in run_interview: {str(e)}")
+        return "Failed to start interview."
+
+
 
 # Singleton instance
 llm_service = LLMService()
 
-# --- Added wrapper function for backward compatibility ---
+
+# --- Wrapper for backward compatibility ---
 async def ask_llm(prompt: str) -> str:
     """
     Wrapper function for generating a response using the LLM.
-    This allows other modules to do: from app.services.llm import ask_llm
+    Usage: from app.services.llm import ask_llm
     """
     return await llm_service.generate_response(prompt)
 
 
-async def run_interview(candidate_name: str, role: str) -> str:
-    return await llm_service.run_interview(candidate_name, role)
+# --- Job generation logic using Gemini ---
+async def generate_job_with_ai(request: JobAIRequest) -> JobAISuggestion:
+    """
+    Generate structured job description using Gemini with JSON output.
+    Ensures valid JSON by cleaning fences/extra text.
+    """
+    structured_prompt = job_prompt.format(title=request.title)
+
+    try:
+        response = llm_service.model.generate_content(structured_prompt)
+
+        if not response or not response.candidates:
+            raise ValueError("Empty response from Gemini")
+
+        text = response.candidates[0].content.parts[0].text.strip()
+        logger.info(f"Raw Gemini job response: {text[:300]}...")
+
+        # --- Sanitize output ---
+        # Remove ```json or ``` fences
+        if text.startswith("```"):
+            text = re.sub(r"^```[a-zA-Z]*\n?", "", text)
+            text = text.rstrip("`").strip()
+
+        # Extract JSON block if extra text exists
+        match = re.search(r"\{.*\}", text, re.DOTALL)
+        if match:
+            text = match.group(0)
+
+        # Try parsing response into JSON
+        try:
+            data = json.loads(text)
+        except json.JSONDecodeError as e:
+            logger.error(f"❌ Failed to parse Gemini JSON: {e} | Raw text: {text}")
+            raise HTTPException(status_code=500, detail="AI did not return valid JSON")
+
+        # Add unique AI token (not persisted in DB)
+        data["token"] = str(uuid.uuid4())
+
+        return JobAISuggestion(**data)
+
+    except Exception as e:
+        logger.error(f"❌ Error in generate_job_with_ai: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

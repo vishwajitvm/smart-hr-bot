@@ -6,6 +6,10 @@ const api = axios.create({
   baseURL: "/api",
 });
 
+// const api = axios.create({
+//   baseURL: "http://localhost:8000/api",
+// });
+
 /* -------------------------------------------------------------------------- */
 /*                                Candidate APIs                              */
 /* -------------------------------------------------------------------------- */
@@ -83,7 +87,7 @@ export const fetchJobPositions = async (): Promise<AxiosResponse<any>> => {
 /*                 Generate job details with AI                               */
 /* -------------------------------------------------------------------------- */
 export const generateJobDetails = async (title: string) => {
-  return api.post("/jobs/generate", { title }, {
+  return api.post("/ai/jobs/generate", { title }, {
     headers: { "Content-Type": "application/json" },
   });
 };
