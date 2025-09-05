@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import ResumeUploadPage from  "./pages/ResumeUpload"
 import JobOpenings from "./pages/JobOpenings";
+import JobOpeningsList from "./pages/JobOpeningsList";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/resume-upload" element={<ResumeUploadPage />} />
           <Route path="/create-job-openings" element={<JobOpenings />} />
+          <Route path="/view-job-openings" element={<JobOpeningsList />} />
           <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
