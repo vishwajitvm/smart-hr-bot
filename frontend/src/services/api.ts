@@ -83,6 +83,44 @@ export const fetchJobPositions = async (): Promise<AxiosResponse<any>> => {
   return api.get("/jobs/positions");
 };
 
+// Fetch all jobs
+export const fetchAllJobs = async (): Promise<AxiosResponse<any>> => {
+  return api.get("/jobs");
+};
+
+// Fetch job by ID
+export const fetchJobById = async (
+  id: string
+): Promise<AxiosResponse<any>> => {
+  return api.get(`/jobs/${id}`);
+};
+
+// Create a new job
+export const createJob = async (
+  data: Record<string, any>
+): Promise<AxiosResponse<any>> => {
+  return api.post("/jobs", data, {
+    headers: { "Content-Type": "application/json" },
+  });
+};
+
+// Update job by ID
+export const updateJob = async (
+  id: string,
+  data: Record<string, any>
+): Promise<AxiosResponse<any>> => {
+  return api.put(`/jobs/${id}`, data, {
+    headers: { "Content-Type": "application/json" },
+  });
+};
+
+// Soft delete job by ID
+export const deleteJob = async (
+  id: string
+): Promise<AxiosResponse<any>> => {
+  return api.delete(`/jobs/${id}`);
+};
+
 /* -------------------------------------------------------------------------- */
 /*                 Generate job details with AI                               */
 /* -------------------------------------------------------------------------- */

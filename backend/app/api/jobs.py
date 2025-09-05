@@ -1,65 +1,90 @@
+# app/api/jobs.py
 from fastapi import APIRouter, HTTPException
 from typing import List
 from datetime import datetime
+from bson import ObjectId
 
-from app.models.job import JobCreate, JobUpdate, JobResponse, JobInDB
-from app.core.logger import get_logger
+from app.models.job import JobCreate, JobUpdate, JobInDB, JobResponse
+from app.core.db import jobs_collection
 
-# In-memory DB (replace with MongoDB/Postgres)
-DB: dict[str, JobInDB] = {}
+router = APIRouter(
+    prefix="/jobs",
+    tags=["Jobs"],
+)
 
-router = APIRouter(prefix="/jobs", tags=["Jobs"])
-logger = get_logger(__name__)
+# Helper to convert Mongo doc → Pydantic
+def job_doc_to_response(doc) -> JobResponse:
+    return JobResponse(
+        id=str(doc["_id"]),
+        title=doc["title"],
+        department=doc.get("department"),
+        location=doc.get("location"),
+        workMode=doc.get("workMode"),
+        type=doc.get("type"),
+        experience=doc.get("experience"),
+        openings=doc.get("openings", 1),
+        salary=doc.get("salary"),
+        deadline=doc.get("deadline"),
+        description=doc.get("description"),
+        responsibilities=doc.get("responsibilities"),
+        requirements=doc.get("requirements"),
+        benefits=doc.get("benefits"),
+        status=doc.get("status", 2),
+        hiringManager=doc.get("hiringManager"),
+        visibility=doc.get("visibility", "Public"),
+        applicationMethod=doc.get("applicationMethod", "Direct Apply"),
+        created_at=doc.get("created_at"),
+        updated_at=doc.get("updated_at"),
+        is_deleted=doc.get("is_deleted", False),
+    )
 
-
-@router.post("", response_model=JobResponse)
-async def create_job(payload: JobCreate):
-    """Create a new job posting and persist in DB."""
-    job = JobInDB(**payload.dict())
-    DB[job.id] = job
-    logger.info({"event": "job_created", "job_id": job.id})
-    return job
-
-
-@router.get("", response_model=List[JobResponse])
-async def list_jobs(show_deleted: bool = False):
-    """List all jobs, filter out deleted by default."""
-    jobs = [job for job in DB.values() if show_deleted or not job.is_deleted]
-    return jobs
-
+@router.get("/", response_model=List[JobResponse])
+async def get_all_jobs():
+    jobs = jobs_collection.find({"is_deleted": False})
+    return [job_doc_to_response(j) for j in jobs]
 
 @router.get("/{job_id}", response_model=JobResponse)
-async def get_job(job_id: str):
-    """Fetch a single job by ID."""
-    job = DB.get(job_id)
-    if not job or job.is_deleted:
+async def get_job_by_id(job_id: str):
+    job = jobs_collection.find_one({"_id": ObjectId(job_id), "is_deleted": False})
+    if not job:
         raise HTTPException(status_code=404, detail="Job not found")
-    return job
+    return job_doc_to_response(job)
+
+@router.post("/", response_model=JobResponse, status_code=201)
+async def create_job(payload: JobCreate):
+    new_job = payload.dict()
+    new_job.update({
+        "created_at": datetime.utcnow(),
+        "updated_at": datetime.utcnow(),
+        "is_deleted": False,
+    })
+    result = jobs_collection.insert_one(new_job)
+    job = jobs_collection.find_one({"_id": result.inserted_id})
+    return job_doc_to_response(job)
 
 
 @router.put("/{job_id}", response_model=JobResponse)
 async def update_job(job_id: str, payload: JobUpdate):
-    """Update a job posting."""
-    job = DB.get(job_id)
-    if not job or job.is_deleted:
+    update_data = payload.dict(exclude_unset=True)
+    update_data["updated_at"] = datetime.utcnow()
+
+    result = jobs_collection.update_one(
+        {"_id": ObjectId(job_id), "is_deleted": False},
+        {"$set": update_data},
+    )
+    if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Job not found")
 
-    updated = job.copy(update=payload.dict(exclude_unset=True))
-    updated.updated_at = datetime.utcnow()
-    DB[job_id] = updated
-    logger.info({"event": "job_updated", "job_id": job_id})
-    return updated
+    job = jobs_collection.find_one({"_id": ObjectId(job_id)})
+    return job_doc_to_response(job)
 
-
-@router.delete("/{job_id}")
-async def delete_job(job_id: str):
-    """Soft delete a job posting."""
-    job = DB.get(job_id)
-    if not job or job.is_deleted:
+@router.delete("/{job_id}", response_model=dict)
+async def soft_delete_job(job_id: str):
+    result = jobs_collection.update_one(
+        {"_id": ObjectId(job_id)},
+        {"$set": {"is_deleted": True, "updated_at": datetime.utcnow()}},
+    )
+    if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Job not found")
 
-    job.is_deleted = True
-    job.updated_at = datetime.utcnow()
-    DB[job_id] = job
-    logger.info({"event": "job_deleted", "job_id": job_id})
-    return {"ok": True, "message": "Job soft deleted"}
+    return {"message": f"Job {job_id} deleted successfully"}

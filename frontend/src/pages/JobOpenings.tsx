@@ -2,10 +2,10 @@ import { useState } from "react";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 import "./css/JobOpenings.css";
-import { generateJobDetails } from "../services/api"; // <-- import new API
+import { createJob, generateJobDetails } from "../services/api";
 
 export default function JobOpenings() {
-  const [job, setJob] = useState({
+const [job, setJob] = useState({
     title: "",
     department: "",
     location: "",
@@ -23,61 +23,79 @@ export default function JobOpenings() {
     hiringManager: "",
     visibility: "Public",
     applicationMethod: "Direct Apply",
+    model: "",
+    duration_ms: "",
+    cached: "",
+    token: "",
   });
 
   const [loadingAI, setLoadingAI] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value, type } = e.target;
-    setJob(prev => ({
+    setJob((prev) => ({
       ...prev,
       [name]: type === "number" ? Number(value) : value,
     }));
   };
 
-
   const handleQuillChange = (field: string, value: string) => {
-    setJob(prev => ({ ...prev, [field]: value }));
+    setJob((prev) => ({ ...prev, [field]: value }));
   };
 
-
-  const handleSubmit = (e: React.FormEvent) => {
+  // Save to backend
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Job Posting Submitted:", job);
-    alert("Job saved successfully!");
-    // TODO: send to backend
+
+    try {
+      setSaving(true);
+
+      const payload = {
+        ...job,
+        deadline: job.deadline ? new Date(job.deadline).toISOString() : null,
+        model: job.model || null,
+        duration_ms: job.duration_ms || null,
+        cached: job.cached ?? null,
+        token: job.token || null,
+      };
+
+      const res = await createJob(payload);
+      console.log("Job saved:", res.data);
+
+      alert("Job saved successfully!");
+      setJob({
+        title: "",
+        department: "",
+        location: "",
+        workMode: "On-site",
+        type: "Full-time",
+        experience: "Entry",
+        openings: 1,
+        salary: "",
+        deadline: "",
+        description: "",
+        responsibilities: "",
+        requirements: "",
+        benefits: "",
+        status: 2,
+        hiringManager: "",
+        visibility: "Public",
+        applicationMethod: "Direct Apply",
+        model: "",
+        duration_ms: "",
+        cached: "",
+        token: "",
+      });
+    } catch (err) {
+      console.error("Failed to save job:", err);
+      alert("Failed to save job. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
-
-  // AI Button Click
-  // const handleAIClick = async () => {
-  //   if (!job.title) {
-  //     alert("Please enter a Job Title first!");
-  //     return;
-  //   }
-
-  //   try {
-  //     setLoadingAI(true);
-  //     const res = await generateJobDetails(job.title);
-  //     const data = res.data;
-
-  //     setJob((prev) => ({
-  //       ...prev,
-  //       description: data.description || prev.description,
-  //       responsibilities: data.responsibilities || prev.responsibilities,
-  //       requirements: data.requirements || prev.requirements,
-  //       benefits: data.benefits || prev.benefits,
-  //       experience: data.experience || prev.experience,
-  //       department: data.department || prev.department,
-  //     }));
-  //   } catch (err) {
-  //     console.error("AI generation failed:", err);
-  //     alert("Failed to generate job details. Please try again.");
-  //   } finally {
-  //     setLoadingAI(false);
-  //   }
-  // };
 
   const normalizeExperience = (exp: string): string => {
     if (!exp) return "Entry";
@@ -97,6 +115,7 @@ export default function JobOpenings() {
     return "On-site";
   };
 
+  // AI auto-fill
   const handleAIClick = async () => {
     if (!job.title) {
       alert("Please enter a Job Title first!");
@@ -123,11 +142,15 @@ export default function JobOpenings() {
         requirements: ai.requirements || prev.requirements,
         benefits: ai.benefits || prev.benefits,
         hiringManager: ai.hiringManager || prev.hiringManager,
-        // leave these as user inputs (AI doesn’t provide)
+        // leave these as user inputs
         deadline: prev.deadline,
         status: prev.status,
         visibility: prev.visibility,
         applicationMethod: prev.applicationMethod,
+        model: res.data.model,
+        duration_ms: res.data.duration_ms,
+        cached: res.data.cached,
+        token: res.data.token,
       }));
     } catch (err) {
       console.error("AI generation failed:", err);
@@ -136,8 +159,6 @@ export default function JobOpenings() {
       setLoadingAI(false);
     }
   };
-
-
 
   // Rich text toolbar config
   const quillModules = {
@@ -365,13 +386,13 @@ export default function JobOpenings() {
 
           {/* Buttons */}
           <div className="form-actions">
-            <button
+            {/* <button
               type="button"
               className="button is-light"
               onClick={() => alert("Preview Coming Soon")}
             >
               Preview
-            </button>
+            </button> */}
             <button type="submit" className="button is-primary">
               Save Job
             </button>

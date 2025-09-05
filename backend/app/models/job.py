@@ -18,10 +18,15 @@ class JobBase(BaseModel):
     responsibilities: Optional[str] = None
     requirements: Optional[str] = None
     benefits: Optional[str] = None
-    status: int = 2  # 0 = Inactive, 1 = Active, 2 = Draft
+    status: Optional[int] = 2  # 0 = Inactive, 1 = Active, 2 = Draft
     hiringManager: Optional[str] = None
-    visibility: str = "Public"
-    applicationMethod: str = "Direct Apply"
+    visibility: Optional[str] = "Public"
+    applicationMethod: Optional[str] = "Direct Apply"
+    
+    model: Optional[str] = None
+    duration_ms: Optional[int] = None
+    cached: Optional[bool] = None
+    token: Optional[str] = None
 
 
 class JobCreate(JobBase):
