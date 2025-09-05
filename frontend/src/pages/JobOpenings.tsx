@@ -28,17 +28,20 @@ export default function JobOpenings() {
   const [loadingAI, setLoadingAI] = useState(false);
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value, type } = e.target;
-    setJob({ ...job, [name]: type === "number" ? Number(value) : value });
+    setJob(prev => ({
+      ...prev,
+      [name]: type === "number" ? Number(value) : value,
+    }));
   };
 
+
   const handleQuillChange = (field: string, value: string) => {
-    setJob({ ...job, [field]: value });
+    setJob(prev => ({ ...prev, [field]: value }));
   };
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,6 +51,52 @@ export default function JobOpenings() {
   };
 
   // AI Button Click
+  // const handleAIClick = async () => {
+  //   if (!job.title) {
+  //     alert("Please enter a Job Title first!");
+  //     return;
+  //   }
+
+  //   try {
+  //     setLoadingAI(true);
+  //     const res = await generateJobDetails(job.title);
+  //     const data = res.data;
+
+  //     setJob((prev) => ({
+  //       ...prev,
+  //       description: data.description || prev.description,
+  //       responsibilities: data.responsibilities || prev.responsibilities,
+  //       requirements: data.requirements || prev.requirements,
+  //       benefits: data.benefits || prev.benefits,
+  //       experience: data.experience || prev.experience,
+  //       department: data.department || prev.department,
+  //     }));
+  //   } catch (err) {
+  //     console.error("AI generation failed:", err);
+  //     alert("Failed to generate job details. Please try again.");
+  //   } finally {
+  //     setLoadingAI(false);
+  //   }
+  // };
+
+  const normalizeExperience = (exp: string): string => {
+    if (!exp) return "Entry";
+    const lower = exp.toLowerCase();
+    if (lower.includes("entry")) return "Entry";
+    if (lower.includes("junior")) return "Entry";
+    if (lower.includes("mid")) return "Mid";
+    if (lower.includes("senior") || lower.includes("lead")) return "Senior";
+    return "Mid"; // fallback
+  };
+
+  const normalizeWorkMode = (mode: string): string => {
+    if (!mode) return "On-site";
+    const lower = mode.toLowerCase();
+    if (lower.includes("remote")) return "Remote";
+    if (lower.includes("hybrid")) return "Hybrid";
+    return "On-site";
+  };
+
   const handleAIClick = async () => {
     if (!job.title) {
       alert("Please enter a Job Title first!");
@@ -57,16 +106,28 @@ export default function JobOpenings() {
     try {
       setLoadingAI(true);
       const res = await generateJobDetails(job.title);
-      const data = res.data;
+      const ai = res.data.generated || {};
 
       setJob((prev) => ({
         ...prev,
-        description: data.description || prev.description,
-        responsibilities: data.responsibilities || prev.responsibilities,
-        requirements: data.requirements || prev.requirements,
-        benefits: data.benefits || prev.benefits,
-        experience: data.experience || prev.experience,
-        department: data.department || prev.department,
+        title: ai.title || prev.title,
+        department: ai.department || prev.department,
+        location: ai.location || prev.location,
+        workMode: normalizeWorkMode(ai.workMode) || prev.workMode,
+        type: ai.type || prev.type,
+        experience: normalizeExperience(ai.experience) || prev.experience,
+        openings: ai.openings ?? prev.openings,
+        salary: ai.salary || prev.salary,
+        description: ai.description || prev.description,
+        responsibilities: ai.responsibilities || prev.responsibilities,
+        requirements: ai.requirements || prev.requirements,
+        benefits: ai.benefits || prev.benefits,
+        hiringManager: ai.hiringManager || prev.hiringManager,
+        // leave these as user inputs (AI doesn’t provide)
+        deadline: prev.deadline,
+        status: prev.status,
+        visibility: prev.visibility,
+        applicationMethod: prev.applicationMethod,
       }));
     } catch (err) {
       console.error("AI generation failed:", err);
@@ -75,6 +136,8 @@ export default function JobOpenings() {
       setLoadingAI(false);
     }
   };
+
+
 
   // Rich text toolbar config
   const quillModules = {
