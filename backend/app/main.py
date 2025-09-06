@@ -1,10 +1,15 @@
 # app/main.py
 
-from fastapi import FastAPI
+import os
+import socket
+from fastapi import FastAPI, APIRouter
+from app.core.db import db, client
+from app.core.logger import setup_logger
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.logger import setup_logger
-from app.api import auth, users, resume, interview, calendar, notifications, llm, candidates, ai_jobs, jobs
+from app.api import auth, users, resume, interview, calendar, notifications, llm, candidates, ai_jobs, jobs, status
+from fastapi.responses import HTMLResponse
 
 
 # Setup logger
@@ -31,6 +36,7 @@ app.add_middleware(
 )
 
 # Routers
+app.include_router(status.router, tags=["Status"])
 app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
 app.include_router(users.router, prefix="/api/users", tags=["Users"])
 app.include_router(resume.router, prefix="/api/resume", tags=["Resume"])
@@ -41,11 +47,6 @@ app.include_router(llm.router, prefix="/api/llm", tags=["LLM"])
 app.include_router(candidates.router, prefix="/api/candidates", tags=["Candidates"])
 app.include_router(ai_jobs.router, prefix="/api", tags=["AI Jobs"])
 app.include_router(jobs.router, prefix="/api", tags=["Jobs"])
-
-@app.get("/api/health")
-def health():
-    logger.info("Health check requested")
-    return {"status": "ok"}
 
 @app.get("/")
 def root():

@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, type ReactNode } from "react";
 import "./css/ResumeUpload.css";
 import {
   uploadResume,
   submitCandidateDetails,
-  
   fetchAllJobs
 } from "../services/api";
 
@@ -24,6 +23,19 @@ interface ResumeData {
 interface Job {
   id: string;
   title: string;
+  department: string;
+  location: string;
+  workMode: string;
+  type: string;
+  experience: string;
+  openings: number;
+  salary: string;
+  description: string;
+  responsibilities: string;
+  requirements: string;
+  benefits: string;
+  extraInfo?: ReactNode;
+  status: number;
 }
 
 const ResumeUpload: React.FC = () => {
@@ -47,23 +59,28 @@ const ResumeUpload: React.FC = () => {
   const [loading, setLoading] = useState(false);
   // const [positions, setPositions] = useState<string[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [showDetails, setShowDetails] = useState(false);
 
   /* -------------------------------------------------------------------------- */
   /*                             Fetch Job Positions                            */
   /* -------------------------------------------------------------------------- */
   useEffect(() => {
-    const loadJobs = async () => {
-      try {
-        const response = await fetchAllJobs();
-        setJobs(response.data || []);
-      } catch (error) {
-        console.error("Failed to fetch jobs:", error);
-        setJobs([]);
-      }
-    };
+  const loadJobs = async () => {
+    try {
+      const response = await fetchAllJobs();
+      const activeJobs = (response.data || []).filter(
+        (job: Job) => job.status === 1
+      );
+      setJobs(activeJobs);
+    } catch (error) {
+      console.error("Failed to fetch jobs:", error);
+      setJobs([]);
+    }
+  };
 
-    loadJobs();
-  }, []);
+  loadJobs();
+}, []);
+
 
   /* -------------------------------------------------------------------------- */
   /*                               File Handling                                */
@@ -153,30 +170,32 @@ const ResumeUpload: React.FC = () => {
   /* -------------------------------------------------------------------------- */
   /*                                 Submit Form                                */
   /* -------------------------------------------------------------------------- */
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  try {
-    const payload = {
-      ...resumeData,
-      email: resumeData.email || "",
-      phone: resumeData.phone || "",
-      location: resumeData.location || "",
-      years_of_experience: resumeData.years_of_experience || "",
-      skills: resumeData.skills || [],
-      interests: resumeData.interests || [],
-      experience_summary: resumeData.experience_summary || "",
-      position: resumeData.position || "",
-      resume_id: resumeData.resume_id || null,   // ✅ ensure sent
-      resume_url: resumeData.resume_url || null, // ✅ ensure sent
-    };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const payload = {
+        ...resumeData,
+        email: resumeData.email || "",
+        phone: resumeData.phone || "",
+        location: resumeData.location || "",
+        years_of_experience: resumeData.years_of_experience || "",
+        skills: resumeData.skills || [],
+        interests: resumeData.interests || [],
+        experience_summary: resumeData.experience_summary || "",
+        position: resumeData.position || "",
+        resume_id: resumeData.resume_id || null,
+        resume_url: resumeData.resume_url || null,
+      };
 
-    await submitCandidateDetails(payload);
-    alert("Application submitted successfully!");
-  } catch (error) {
-    console.error("Error submitting application:", error);
-    alert("Failed to submit application.");
-  }
-};
+      await submitCandidateDetails(payload);
+      alert("Application submitted successfully!");
+    } catch (error) {
+      console.error("Error submitting application:", error);
+      alert("Failed to submit application.");
+    }
+  };
+
+  const selectedJob = jobs.find((job) => job.title === resumeData.position);
 
 
 
@@ -231,7 +250,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                 </a>
               )}
 
-              {/* ✅ Upload & Autofill Button */}
+              {/* Upload & Autofill Button */}
               <button
                 onClick={handleUpload}
                 disabled={loading}
@@ -267,6 +286,55 @@ const handleSubmit = async (e: React.FormEvent) => {
               ))}
             </select>
           </div>
+
+          {/* Toggle Button */}
+          {resumeData.position && (
+            <button
+              type="button"
+              className="toggle-btn"
+              onClick={() => setShowDetails((prev) => !prev)}
+            >
+              {showDetails ? "Hide Details ▲" : "Show Details ▼"}
+            </button>
+          )}
+
+          {/* Job Details with animation */}
+          <div className={`job-details ${showDetails ? "open" : ""}`}>
+            {selectedJob && (
+              <div>
+                <h3>{selectedJob.title}</h3>
+                <p><strong>Department:</strong> {selectedJob.department}</p>
+                <p><strong>Location:</strong> {selectedJob.location}</p>
+                <p><strong>Work Mode:</strong> {selectedJob.workMode}</p>
+                <p><strong>Type:</strong> {selectedJob.type}</p>
+                <p><strong>Experience:</strong> {selectedJob.experience}</p>
+                <p><strong>Openings:</strong> {selectedJob.openings}</p>
+                <p><strong>Salary:</strong> {selectedJob.salary}</p>
+
+                {/* Render rich text safely */}
+                <div className="job-section">
+                  <h4>Description</h4>
+                  <div dangerouslySetInnerHTML={{ __html: selectedJob.description }} />
+                </div>
+
+                <div className="job-section">
+                  <h4>Responsibilities</h4>
+                  <div dangerouslySetInnerHTML={{ __html: selectedJob.responsibilities }} />
+                </div>
+
+                <div className="job-section">
+                  <h4>Requirements</h4>
+                  <div dangerouslySetInnerHTML={{ __html: selectedJob.requirements }} />
+                </div>
+
+                <div className="job-section">
+                  <h4>Benefits</h4>
+                  <div dangerouslySetInnerHTML={{ __html: selectedJob.benefits }} />
+                </div>
+              </div>
+            )}
+          </div>
+
 
           {/* Name */}
           <div className="form-group">

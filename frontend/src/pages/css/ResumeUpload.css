@@ -1,3 +1,6 @@
+.resume-container{
+  color: black !important;
+}
 .resume-container {
   max-width: 1200px;
   margin: 2rem auto;
@@ -15,9 +18,9 @@
   border: 2px dashed #6366f1;
   border-radius: 12px;
   padding: 2rem;
-  background: #fff;
+  background: #fff !important;
   text-align: center;
-  color: #6b7280;
+  color: #6b7280 !important;
   font-size: 14px;
 
   /* ✅ Balance height with right form */
@@ -32,15 +35,15 @@
 }
 
 .upload-box:hover {
-  background: #f9fafb;
-  border-color: #4f46e5;
+  background: #f9fafb !important;
+  border-color: #4f46e5 !important;
 }
 
 /* Upload instruction text */
 .upload-text {
   margin-bottom: 1rem;
   font-size: 15px;
-  color: #4b5563;
+  color: #4b5563 !important;
 }
 
 /* File preview */
@@ -80,7 +83,7 @@
   display: block;
   font-weight: 600;
   margin-bottom: 0.5rem;
-  color: #374151;
+  color: #374151 !important;
 }
 
 .form-group input,
@@ -108,8 +111,8 @@ textarea {
 }
 
 .tag {
-  background: #4f46e5;
-  color: white;
+  background: #4f46e5 !important;
+  color: white !important;
   padding: 0.3rem 0.6rem;
   border-radius: 6px;
   font-size: 0.85rem;
@@ -121,7 +124,7 @@ textarea {
 .tag button {
   border: none;
   background: transparent;
-  color: white;
+  color: white !important;
   font-size: 0.85rem;
   cursor: pointer;
 }
@@ -137,20 +140,20 @@ textarea {
 }
 
 .btn-primary {
-  background: #4f46e5;
-  color: white;
+  background: #4f46e5 ;
+  color: white !important;
   border: none;
 }
 
 .btn-secondary {
   background: #e5e7eb;
-  color: #111827;
+  color: #111827 !important;
   border: none;
 }
 
 .btn-success {
   background: #16a34a;
-  color: white;
+  color: white !important;
   border: none;
   width: 100%;
 }
@@ -176,7 +179,7 @@ label.btn-secondary {
   padding: 0.6rem 1rem;
   border-radius: 6px;
   background: #e5e7eb;
-  color: #111827;
+  color: #111827 !important;
   font-weight: 600;
   transition: 0.2s;
 }
@@ -185,3 +188,67 @@ label.btn-secondary:hover {
   background: #d1d5db;
 }
 
+
+/* =========================
+   Toggle & Job Details
+========================= */
+.toggle-btn {
+  background: transparent;
+  border: none;
+  color: #4f46e5 !important;
+  font-weight: 600;
+  margin: 0.75rem 0 1.25rem;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.toggle-btn:hover {
+  color: #312e81 !important;
+}
+
+.job-details {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-5px);
+  transition: all 0.4s ease;
+  /* border-left: 4px solid #f3f2f7; */
+  padding-left: 1rem;
+  margin-top: 1rem;
+  background: #f9fafb;
+  border-radius: 8px;
+}
+
+.job-details.open {
+  max-height: 2000px;
+  opacity: 1;
+  transform: translateY(0);
+  padding: 1rem;
+  margin-bottom: 30px;
+  margin-top: 10px;
+  padding-left: 20px;
+}
+
+.job-details h3 {
+  margin: 0.5rem 0 1rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827 !important;
+}
+
+.job-section {
+  margin-top: 1rem;
+}
+
+.job-section h4 {
+  color: #4f46e5 !important;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.job-section div {
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: #374151 !important;
+}
