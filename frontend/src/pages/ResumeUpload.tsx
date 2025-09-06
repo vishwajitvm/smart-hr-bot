@@ -3,7 +3,8 @@ import "./css/ResumeUpload.css";
 import {
   uploadResume,
   submitCandidateDetails,
-  fetchJobPositions,
+  
+  fetchAllJobs
 } from "../services/api";
 
 interface ResumeData {
@@ -18,6 +19,11 @@ interface ResumeData {
   position: string;
   resume_id: string | null;
   resume_url: string | null;
+}
+
+interface Job {
+  id: string;
+  title: string;
 }
 
 const ResumeUpload: React.FC = () => {
@@ -39,28 +45,24 @@ const ResumeUpload: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
   const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [positions, setPositions] = useState<string[]>([]);
+  // const [positions, setPositions] = useState<string[]>([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
 
   /* -------------------------------------------------------------------------- */
   /*                             Fetch Job Positions                            */
   /* -------------------------------------------------------------------------- */
   useEffect(() => {
-    const loadPositions = async () => {
+    const loadJobs = async () => {
       try {
-        const response = await fetchJobPositions();
-        setPositions(response.data || []);
+        const response = await fetchAllJobs();
+        setJobs(response.data || []);
       } catch (error) {
-        console.error("Failed to fetch job positions:", error);
-        setPositions([
-          "Software Engineer",
-          "Frontend Developer",
-          "Backend Developer",
-          "HR Manager",
-        ]);
+        console.error("Failed to fetch jobs:", error);
+        setJobs([]);
       }
     };
 
-    loadPositions();
+    loadJobs();
   }, []);
 
   /* -------------------------------------------------------------------------- */
@@ -258,9 +260,9 @@ const handleSubmit = async (e: React.FormEvent) => {
               onChange={handleChange}
             >
               <option value="">Select Position</option>
-              {positions.map((pos) => (
-                <option key={pos} value={pos}>
-                  {pos}
+              {jobs.map((job) => (
+                <option key={job.id} value={job.title}>
+                  {job.title}
                 </option>
               ))}
             </select>

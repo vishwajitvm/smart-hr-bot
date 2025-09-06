@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
 import {
   fetchAllJobs,
   deleteJob,
@@ -39,6 +40,8 @@ export default function JobOpeningsList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const jobsPerPage = 5;
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchJobs();
@@ -183,8 +186,8 @@ export default function JobOpeningsList() {
           <div className="control">
             <button
               className="button is-primary"
-              onClick={() =>
-                Swal.fire("Add Job", "Redirect to add job form.", "info")
+              onClick={
+                () => navigate("/create-job-openings")
               }
             >
               + Add Job
