@@ -16,6 +16,7 @@ interface ResumeData {
   interests: string[];
   experience_summary: string;
   position: string;
+  job_id: string;
   resume_id: string | null;
   resume_url: string | null;
 }
@@ -49,6 +50,7 @@ const ResumeUpload: React.FC = () => {
     interests: [],
     experience_summary: "",
     position: "",
+    job_id: "",
     resume_id: "",
     resume_url: ""
 
@@ -172,6 +174,35 @@ const ResumeUpload: React.FC = () => {
   /* -------------------------------------------------------------------------- */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Validation
+    if (!resumeData.job_id) {
+      alert("Please select a job position.");
+      return;
+    }
+    if (!resumeData.position) {
+      alert("Position title missing. Please re-select a job.");
+      return;
+    }
+    if (!resumeData.name.trim()) {
+      alert("Full Name is required.");
+      return;
+    }
+    if (!resumeData.email?.trim()) {
+      alert("Email is required.");
+      return;
+    }
+    if (!resumeData.phone?.trim()) {
+      alert("Phone is required.");
+      return;
+    }
+    if (!resumeData.years_of_experience?.trim()) {
+      alert("Years of Experience is required.");
+      return;
+    }
+    if (resumeData.skills.length === 0) {
+      alert("Please add at least one skill.");
+      return;
+    }
     try {
       const payload = {
         ...resumeData,
@@ -183,6 +214,7 @@ const ResumeUpload: React.FC = () => {
         interests: resumeData.interests || [],
         experience_summary: resumeData.experience_summary || "",
         position: resumeData.position || "",
+        job_id: resumeData.job_id || null, 
         resume_id: resumeData.resume_id || null,
         resume_url: resumeData.resume_url || null,
       };
@@ -273,7 +305,7 @@ const ResumeUpload: React.FC = () => {
           {/* Position */}
           <div className="form-group">
             <label>Position Applying For</label>
-            <select
+            {/* <select
               name="position"
               value={resumeData.position}
               onChange={handleChange}
@@ -284,7 +316,31 @@ const ResumeUpload: React.FC = () => {
                   {job.title}
                 </option>
               ))}
+            </select> */}
+            <select
+              name="job_id"
+              value={resumeData.job_id}
+              onChange={(e) => {
+                const selectedId = e.target.value;
+                // const selectedJob = jobs.find((job) => job.id === selectedId);
+                const selectedJob = jobs.find((job) => job.id === resumeData.job_id);
+
+
+                setResumeData((prev) => ({
+                  ...prev,
+                  job_id: selectedId,
+                  position: selectedJob ? selectedJob.title : "" // keep title for UI
+                }));
+              }}
+            >
+              <option value="">Select Position</option>
+              {jobs.map((job) => (
+                <option key={job.id} value={job.id}>
+                  {job.title}
+                </option>
+              ))}
             </select>
+
           </div>
 
           {/* Toggle Button */}
