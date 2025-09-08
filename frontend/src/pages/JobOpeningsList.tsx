@@ -40,6 +40,10 @@ export default function JobOpeningsList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const jobsPerPage = 5;
+  const [notification, setNotification] = useState<{
+      message: string;
+      type: "is-success" | "is-danger" | "is-warning" | "is-info" | "" ;
+    }>({ message: "", type: "" });
 
   const navigate = useNavigate();
 
@@ -55,7 +59,7 @@ export default function JobOpeningsList() {
       setFilteredJobs(res.data);
     } catch (err) {
       console.error("Failed to fetch jobs", err);
-      Swal.fire("Error", "Unable to fetch jobs", "error");
+      setNotification({ message: "Unable to fetch jobs", type: "is-danger" });
     } finally {
       setLoading(false);
     }
@@ -89,10 +93,10 @@ export default function JobOpeningsList() {
     if (result.isConfirmed) {
       try {
         await deleteJob(id);
-        Swal.fire("Deleted!", "Job has been deleted.", "success");
+        setNotification({ message: "Job deleted successfully!", type: "is-success" });
         fetchJobs();
       } catch (err) {
-        Swal.fire("Error", "Failed to delete job.", "error");
+        setNotification({ message: "Failed to delete job.", type: "is-danger" });
       }
     }
   };
@@ -108,8 +112,12 @@ export default function JobOpeningsList() {
       setFilteredJobs((prev) =>
         prev.map((j) => (j.id === job.id ? { ...j, status: newStatus } : j))
       );
+      setNotification({
+        message: `Status updated to ${newStatus === 1 ? "Active" : "Inactive"}`,
+        type: "is-info",
+      });
     } catch (err) {
-      Swal.fire("Error", "Failed to update status.", "error");
+      setNotification({ message: "Failed to update status.", type: "is-danger" });
     }
   };
 
@@ -154,7 +162,7 @@ export default function JobOpeningsList() {
         },
       });
     } catch (err) {
-      Swal.fire("Error", "Failed to fetch job details.", "error");
+      setNotification({ message: "Failed to fetch job details.", type: "is-danger" });
     }
   };
 
@@ -166,6 +174,17 @@ export default function JobOpeningsList() {
 
   return (
     <div className="container mt-5">
+      {/* Notification */}
+      {notification.message && (
+        <div className={`notification ${notification.type}`}>
+          <button
+            className="delete"
+            onClick={() => setNotification({ message: "", type: "" })}
+          ></button>
+          {notification.message}
+        </div>
+      )}
+
       <div className="level mb-4">
         <div className="level-left">
           <h1 className="title has-text-dark">Job Openings</h1>

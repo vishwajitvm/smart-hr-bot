@@ -63,6 +63,11 @@ const ResumeUpload: React.FC = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [showDetails, setShowDetails] = useState(false);
 
+  const [notification, setNotification] = useState<{
+    message: string;
+    type: "is-success" | "is-danger" | "is-warning" | "" ;
+  }>({ message: "", type: "" });
+
   /* -------------------------------------------------------------------------- */
   /*                             Fetch Job Positions                            */
   /* -------------------------------------------------------------------------- */
@@ -106,7 +111,8 @@ const ResumeUpload: React.FC = () => {
 
   const handleUpload = async () => {
     if (!file) {
-      alert("Please upload a resume file.");
+      setNotification({ message: "Please upload a resume file.", type: "is-warning" });
+      // alert("Please upload a resume file.");
       return;
     }
 
@@ -119,12 +125,15 @@ const ResumeUpload: React.FC = () => {
         ...response.data, // fill with API response
       }));
 
+      setNotification({ message: "Resume uploaded & parsed successfully!", type: "is-success" });
+
       if (response.data.download_url) {
         setFilePreviewUrl(response.data.download_url);
       }
     } catch (error) {
       console.error("Error uploading resume:", error);
-      alert("Failed to parse resume.");
+      setNotification({ message: "Failed to parse resume.", type: "is-danger" });
+      // alert("Failed to parse resume.");
     } finally {
       setLoading(false);
     }
@@ -176,31 +185,37 @@ const ResumeUpload: React.FC = () => {
     e.preventDefault();
     // Validation
     if (!resumeData.job_id) {
-      alert("Please select a job position.");
+      setNotification({ message: "Please select a job position.", type: "is-warning" });
       return;
     }
-    if (!resumeData.position) {
-      alert("Position title missing. Please re-select a job.");
-      return;
-    }
+    // if (!resumeData.position) {
+    //   setNotification({ message: "Position title missing. Please re-select a job.", type: "is-warning" });
+    //   // alert("Position title missing. Please re-select a job.");
+    //   return;
+    // }
     if (!resumeData.name.trim()) {
-      alert("Full Name is required.");
+      // alert("Full Name is required.");
+      setNotification({ message: "Full Name is required.", type: "is-danger" });
       return;
     }
     if (!resumeData.email?.trim()) {
-      alert("Email is required.");
+      // alert("Email is required.");
+      setNotification({ message: "Email is required.", type: "is-danger" });
       return;
     }
     if (!resumeData.phone?.trim()) {
-      alert("Phone is required.");
+      // alert("Phone is required.");
+      setNotification({ message: "Phone is required.", type: "is-danger" });
       return;
     }
     if (!resumeData.years_of_experience?.trim()) {
-      alert("Years of Experience is required.");
+      // alert("Years of Experience is required.");
+      setNotification({ message: "Years of Experience is required.", type: "is-danger" });
       return;
     }
     if (resumeData.skills.length === 0) {
-      alert("Please add at least one skill.");
+      // alert("Please add at least one skill.");
+      setNotification({ message: "Please add at least one skill.", type: "is-danger" });
       return;
     }
     try {
@@ -220,10 +235,12 @@ const ResumeUpload: React.FC = () => {
       };
 
       await submitCandidateDetails(payload);
-      alert("Application submitted successfully!");
+      // alert("Application submitted successfully!");
+      setNotification({ message: "Application submitted successfully!", type: "is-success" });
     } catch (error) {
       console.error("Error submitting application:", error);
-      alert("Failed to submit application.");
+      // alert("Failed to submit application.");
+      setNotification({ message: "Failed to submit application.", type: "is-danger" });
     }
   };
 
@@ -236,6 +253,17 @@ const ResumeUpload: React.FC = () => {
   /* -------------------------------------------------------------------------- */
   return (
     <div className="resume-container">
+       {/* Notification */}
+      {notification.message && (
+        <div className={`notification ${notification.type}`}>
+          <button
+            className="delete"
+            onClick={() => setNotification({ message: "", type: "" })}
+          ></button>
+          {notification.message}
+        </div>
+      )}
+
       <div className="resume-grid">
         {/* Left Side: Upload & Preview */}
         <div
