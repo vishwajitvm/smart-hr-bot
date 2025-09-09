@@ -45,7 +45,7 @@ export const submitCandidateDetails = async (data: Record<string, any>) => {
 
 
 export const fetchAllCandidates = async (): Promise<AxiosResponse<any>> => {
-  return api.get("/candidates");
+  return api.get("/candidates/");
 };
 
 export const fetchCandidateById = async (
@@ -72,20 +72,16 @@ export const deleteCandidate = async (
 export const inactivateCandidate = async (
   id: string
 ): Promise<AxiosResponse<any>> => {
-  return api.patch(`/candidates/${id}/inactivate`);
+  return api.patch(`/candidates/${id}/inactivate/`);
 };
 
 /* -------------------------------------------------------------------------- */
 /*                                   Jobs APIs                                */
 /* -------------------------------------------------------------------------- */
 
-export const fetchJobPositions = async (): Promise<AxiosResponse<any>> => {
-  return api.get("/jobs/positions");
-};
-
 // Fetch all jobs
 export const fetchAllJobs = async (): Promise<AxiosResponse<any>> => {
-  return api.get("/jobs");
+  return api.get("/jobs/");
 };
 
 // Fetch job by ID
@@ -99,7 +95,7 @@ export const fetchJobById = async (
 export const createJob = async (
   data: Record<string, any>
 ): Promise<AxiosResponse<any>> => {
-  return api.post("/jobs", data, {
+  return api.post("/jobs/", data, {
     headers: { "Content-Type": "application/json" },
   });
 };

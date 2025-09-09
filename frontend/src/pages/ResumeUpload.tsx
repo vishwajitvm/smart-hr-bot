@@ -62,7 +62,7 @@ const ResumeUpload: React.FC = () => {
   // const [positions, setPositions] = useState<string[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [showDetails, setShowDetails] = useState(false);
-
+  const hasFetched = React.useRef(false);
   const [notification, setNotification] = useState<{
     message: string;
     type: "is-success" | "is-danger" | "is-warning" | "";
@@ -71,22 +71,25 @@ const ResumeUpload: React.FC = () => {
   /* -------------------------------------------------------------------------- */
   /*                             Fetch Job Positions                            */
   /* -------------------------------------------------------------------------- */
-  useEffect(() => {
-    const loadJobs = async () => {
-      try {
-        const response = await fetchAllJobs();
-        const activeJobs = (response.data || []).filter(
-          (job: Job) => job.status === 1
-        );
-        setJobs(activeJobs);
-      } catch (error) {
-        console.error("Failed to fetch jobs:", error);
-        setJobs([]);
-      }
-    };
+ useEffect(() => {
+  if (hasFetched.current) return; // block duplicate calls
+  hasFetched.current = true;
 
-    loadJobs();
-  }, []);
+  const loadJobs = async () => {
+    try {
+      const response = await fetchAllJobs();
+      const activeJobs = (response.data || []).filter(
+        (job: Job) => job.status === 1
+      );
+      setJobs(activeJobs);
+    } catch (error) {
+      console.error("Failed to fetch jobs:", error);
+      setJobs([]);
+    }
+  };
+
+  loadJobs();
+}, []);
 
 
   /* -------------------------------------------------------------------------- */

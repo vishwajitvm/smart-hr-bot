@@ -20,6 +20,7 @@ export default defineConfig({
         target: activeBackend,
         changeOrigin: true,
         secure: false,
+        
       },
     },
   },

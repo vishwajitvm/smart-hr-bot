@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import {
@@ -34,6 +34,7 @@ interface Job {
 }
 
 export default function JobOpeningsList() {
+  const hasFetched = useRef(false);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,7 +49,10 @@ export default function JobOpeningsList() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchJobs();
+    if (!hasFetched.current) {
+      fetchJobs();
+      hasFetched.current = true;
+    }
   }, []);
 
   const fetchJobs = async () => {
