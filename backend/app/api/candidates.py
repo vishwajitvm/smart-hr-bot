@@ -9,38 +9,48 @@ from app.models.candidate import CandidateCreate, CandidateUpdate, CandidateResp
 router = APIRouter()
 logger = logging.getLogger("candidates_api")
 
+
+def normalize_mongo_doc(doc: dict) -> dict:
+    """Convert MongoDB _id to string id and return safe dict."""
+    if not doc:
+        return {}
+    doc = {**doc}
+    doc["id"] = str(doc.pop("_id"))
+    return doc
+
+
 # Create
 @router.post("/", response_model=CandidateResponse)
 async def create_candidate(candidate: CandidateCreate):
     try:
-        doc = candidate.model_dump()
-        doc.update({"deleted": False, "status": "active"})
-        result = candidates_collection.insert_one(doc)
-        candidate_id = str(result.inserted_id)
+        # remove None values to avoid inserting junk
+        doc = {k: v for k, v in candidate.model_dump().items() if v is not None}
 
-        # ensure response shape is valid (moves any extras into extra_data)
-        return CandidateResponse.model_validate({**doc, "id": candidate_id})
+        # always enforce defaults
+        doc.update({"deleted": False, "status": "active"})
+
+        result = candidates_collection.insert_one(doc)
+        saved = candidates_collection.find_one({"_id": result.inserted_id})
+
+        return CandidateResponse.model_validate(normalize_mongo_doc(saved))
     except ValidationError as ve:
         logger.exception("Validation error on create_candidate")
         raise HTTPException(status_code=422, detail=ve.errors())
-    except Exception as e:
+    except Exception:
         logger.exception("Failed to insert candidate")
         raise HTTPException(status_code=500, detail="Failed to create candidate")
+
 
 # Get all (exclude soft-deleted)
 @router.get("/", response_model=list[CandidateResponse])
 async def get_all_candidates():
     try:
-        docs = list(candidates_collection.find({"deleted": False}))
-        resp = []
-        for d in docs:
-            d["id"] = str(d.pop("_id"))
-            # normalize via response model (funnels extras)
-            resp.append(CandidateResponse.model_validate(d))
-        return resp
+        docs = candidates_collection.find({"deleted": False})
+        return [CandidateResponse.model_validate(normalize_mongo_doc(d)) for d in docs]
     except Exception:
         logger.exception("Failed to fetch candidates")
         raise HTTPException(status_code=500, detail="Failed to fetch candidates")
+
 
 # Get by id
 @router.get("/{candidate_id}", response_model=CandidateResponse)
@@ -49,13 +59,13 @@ async def get_candidate_by_id(candidate_id: str):
         d = candidates_collection.find_one({"_id": ObjectId(candidate_id), "deleted": False})
         if not d:
             raise HTTPException(status_code=404, detail="Candidate not found")
-        d["id"] = str(d.pop("_id"))
-        return CandidateResponse.model_validate(d)
+        return CandidateResponse.model_validate(normalize_mongo_doc(d))
     except HTTPException:
         raise
     except Exception:
         logger.exception(f"Failed to fetch candidate {candidate_id}")
         raise HTTPException(status_code=500, detail="Failed to fetch candidate")
+
 
 # Update
 @router.put("/{candidate_id}", response_model=CandidateResponse)
@@ -70,13 +80,13 @@ async def update_candidate(candidate_id: str, updates: CandidateUpdate):
             raise HTTPException(status_code=404, detail="Candidate not found")
 
         d = candidates_collection.find_one({"_id": ObjectId(candidate_id)})
-        d["id"] = str(d.pop("_id"))
-        return CandidateResponse.model_validate(d)
+        return CandidateResponse.model_validate(normalize_mongo_doc(d))
     except HTTPException:
         raise
     except Exception:
         logger.exception(f"Failed to update candidate {candidate_id}")
         raise HTTPException(status_code=500, detail="Failed to update candidate")
+
 
 # Soft delete
 @router.delete("/{candidate_id}")
@@ -93,6 +103,7 @@ async def soft_delete_candidate(candidate_id: str):
     except Exception:
         logger.exception(f"Failed to soft delete candidate {candidate_id}")
         raise HTTPException(status_code=500, detail="Failed to delete candidate")
+
 
 # Inactivate
 @router.patch("/{candidate_id}/inactive")
