@@ -8,7 +8,7 @@ from app.core.logger import setup_logger
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.logger import setup_logger
-from app.api import auth, users, resume, interview, calendar, notifications, llm, candidates, ai_jobs, jobs, status
+from app.api import auth, users, resume, interview, calendar, notifications, llm, candidates, ai_jobs, jobs, status, candidate_listing
 from fastapi.responses import HTMLResponse
 
 
@@ -47,6 +47,7 @@ app.include_router(llm.router, prefix="/api/llm", tags=["LLM"])
 app.include_router(candidates.router, prefix="/api/candidates", tags=["Candidates"])
 app.include_router(ai_jobs.router, prefix="/api", tags=["AI Jobs"])
 app.include_router(jobs.router, prefix="/api", tags=["Jobs"])
+app.include_router(candidate_listing.router, prefix="/api", tags=["Candidate Listing"])
 
 @app.get("/")
 def root():

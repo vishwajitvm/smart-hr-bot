@@ -18,6 +18,7 @@ class CandidateBase(BaseModel):
 
     experience_summary: Optional[str] = ""
     position: Optional[str] = ""
+    job_id: Optional[str] = None
     status: Optional[str] = "active"
     deleted: Optional[bool] = False
 
