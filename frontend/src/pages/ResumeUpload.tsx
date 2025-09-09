@@ -1,4 +1,5 @@
 import React, { useState, useEffect, type ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 import "./css/ResumeUpload.css";
 import {
   uploadResume,
@@ -67,6 +68,7 @@ const ResumeUpload: React.FC = () => {
     message: string;
     type: "is-success" | "is-danger" | "is-warning" | "";
   }>({ message: "", type: "" });
+   const navigate = useNavigate();
 
   /* -------------------------------------------------------------------------- */
   /*                             Fetch Job Positions                            */
@@ -240,6 +242,9 @@ const ResumeUpload: React.FC = () => {
       await submitCandidateDetails(payload);
       // alert("Application submitted successfully!");
       setNotification({ message: "Application submitted successfully!", type: "is-success" });
+      setTimeout(() => {
+        navigate("/thank-you");
+      }, 1000);
     } catch (error) {
       console.error("Error submitting application:", error);
       // alert("Failed to submit application.");

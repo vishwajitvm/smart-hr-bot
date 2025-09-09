@@ -1,0 +1,46 @@
+/* thankyou.css */
+
+/* Fade-in + slide-up animation */
+@keyframes fadeSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Apply animation to box */
+.thankyou-box {
+  animation: fadeSlideUp 0.8s ease-out;
+  background: #fff;
+  border-radius: 16px;
+  padding: 3rem;
+  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Heading style */
+.thankyou-title {
+  font-size: 2.5rem;
+  color: #2ecc71; /* Success green */
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+/* Subtitle style */
+.thankyou-subtitle {
+  font-size: 1.2rem;
+  color: #555;
+}
+
+/* Button hover effects */
+.thankyou-buttons .button {
+  transition: all 0.3s ease;
+}
+
+.thankyou-buttons .button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+}
