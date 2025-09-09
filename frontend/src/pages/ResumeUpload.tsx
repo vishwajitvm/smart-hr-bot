@@ -65,28 +65,28 @@ const ResumeUpload: React.FC = () => {
 
   const [notification, setNotification] = useState<{
     message: string;
-    type: "is-success" | "is-danger" | "is-warning" | "" ;
+    type: "is-success" | "is-danger" | "is-warning" | "";
   }>({ message: "", type: "" });
 
   /* -------------------------------------------------------------------------- */
   /*                             Fetch Job Positions                            */
   /* -------------------------------------------------------------------------- */
   useEffect(() => {
-  const loadJobs = async () => {
-    try {
-      const response = await fetchAllJobs();
-      const activeJobs = (response.data || []).filter(
-        (job: Job) => job.status === 1
-      );
-      setJobs(activeJobs);
-    } catch (error) {
-      console.error("Failed to fetch jobs:", error);
-      setJobs([]);
-    }
-  };
+    const loadJobs = async () => {
+      try {
+        const response = await fetchAllJobs();
+        const activeJobs = (response.data || []).filter(
+          (job: Job) => job.status === 1
+        );
+        setJobs(activeJobs);
+      } catch (error) {
+        console.error("Failed to fetch jobs:", error);
+        setJobs([]);
+      }
+    };
 
-  loadJobs();
-}, []);
+    loadJobs();
+  }, []);
 
 
   /* -------------------------------------------------------------------------- */
@@ -229,7 +229,7 @@ const ResumeUpload: React.FC = () => {
         interests: resumeData.interests || [],
         experience_summary: resumeData.experience_summary || "",
         position: resumeData.position || "",
-        job_id: resumeData.job_id || null, 
+        job_id: resumeData.job_id || null,
         resume_id: resumeData.resume_id || null,
         resume_url: resumeData.resume_url || null,
       };
@@ -244,7 +244,8 @@ const ResumeUpload: React.FC = () => {
     }
   };
 
-  const selectedJob = jobs.find((job) => job.title === resumeData.position);
+  // const selectedJob = jobs.find((job) => job.title === resumeData.position);
+  const selectedJob = jobs.find((job) => job.id === resumeData.job_id);
 
 
 
@@ -253,7 +254,7 @@ const ResumeUpload: React.FC = () => {
   /* -------------------------------------------------------------------------- */
   return (
     <div className="resume-container">
-       {/* Notification */}
+      {/* Notification */}
       {notification.message && (
         <div className={`notification ${notification.type}`}>
           <button
@@ -350,14 +351,12 @@ const ResumeUpload: React.FC = () => {
               value={resumeData.job_id}
               onChange={(e) => {
                 const selectedId = e.target.value;
-                // const selectedJob = jobs.find((job) => job.id === selectedId);
-                const selectedJob = jobs.find((job) => job.id === resumeData.job_id);
-
+                const selectedJob = jobs.find((job) => job.id === selectedId);
 
                 setResumeData((prev) => ({
                   ...prev,
                   job_id: selectedId,
-                  position: selectedJob ? selectedJob.title : "" // keep title for UI
+                  position: selectedJob ? selectedJob.title : ""
                 }));
               }}
             >
