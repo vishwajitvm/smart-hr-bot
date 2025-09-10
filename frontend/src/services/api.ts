@@ -117,6 +117,15 @@ export const deleteJob = async (
   return api.delete(`/jobs/${id}`);
 };
 
+export const updateJobStatus = async (
+  id: string,
+  status: number
+): Promise<AxiosResponse<any>> => {
+  return api.patch(`/jobs/${id}/status`, { status }, {
+    headers: { "Content-Type": "application/json" },
+  });
+};
+
 /* -------------------------------------------------------------------------- */
 /*                 Generate job details with AI                               */
 /* -------------------------------------------------------------------------- */

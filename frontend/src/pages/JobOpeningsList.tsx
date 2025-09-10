@@ -6,6 +6,7 @@ import {
   deleteJob,
   updateJob,
   fetchJobById,
+  updateJobStatus
 } from "../services/api";
 import "bulma/css/bulma.min.css";
 import "./css/JobOpeningsList.css";
@@ -69,6 +70,7 @@ export default function JobOpeningsList() {
     }
   };
 
+
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const term = e.target.value.toLowerCase();
     setSearchTerm(term);
@@ -106,7 +108,7 @@ export default function JobOpeningsList() {
   const handleStatusToggle = async (job: Job) => {
     const newStatus = job.status === 1 ? 0 : 1;
     try {
-      await updateJob(job.id, { status: newStatus });
+      await updateJobStatus(job.id, newStatus);
       setJobs((prev) =>
         prev.map((j) => (j.id === job.id ? { ...j, status: newStatus } : j))
       );

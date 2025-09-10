@@ -1,5 +1,5 @@
 # app/api/jobs.py
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Body, HTTPException
 from typing import List
 from datetime import datetime
 from bson import ObjectId
@@ -88,3 +88,19 @@ async def soft_delete_job(job_id: str):
         raise HTTPException(status_code=404, detail="Job not found")
 
     return {"message": f"Job {job_id} deleted successfully"}
+
+@router.patch("/{job_id}/status", response_model=JobResponse)
+async def update_job_status(job_id: str, status: int = Body(..., embed=True)):
+    if status not in [0, 1]:
+        raise HTTPException(status_code=400, detail="Invalid status value")
+
+    result = jobs_collection.update_one(
+        {"_id": ObjectId(job_id), "is_deleted": False},
+        {"$set": {"status": status, "updated_at": datetime.utcnow()}},
+    )
+
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    job = jobs_collection.find_one({"_id": ObjectId(job_id)})
+    return job_doc_to_response(job)
