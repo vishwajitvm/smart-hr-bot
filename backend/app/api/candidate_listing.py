@@ -1,4 +1,5 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
+from fastapi.params import Body
 from app.core.db import db
 from app.models.candidate import CandidateResponse
 from app.models.job import JobResponse
@@ -93,3 +94,76 @@ async def list_candidates(payload: CandidateListRequest):
             "hasMore": has_more,
         }
     }
+  
+    
+@router.post("/get-candidate-by-id")
+async def get_candidate_by_id(payload: dict = Body(...)):
+    """
+    Fetch a single candidate by ID (POST) with related job and resume details.
+    Request Body:
+    {
+        "candidate_id": "abc123"
+    }
+    """
+
+    candidate_id = payload.get("candidate_id")
+    if not candidate_id:
+        raise HTTPException(status_code=400, detail="candidate_id is required")
+
+    # Candidate query
+    query = (
+        {"_id": ObjectId(candidate_id)}
+        if ObjectId.is_valid(candidate_id)
+        else {"id": candidate_id}
+    )
+
+    candidate = db["candidates"].find_one({**query, "deleted": False})
+    if not candidate:
+        raise HTTPException(status_code=404, detail="Candidate not found")
+
+    candidate["id"] = str(candidate["_id"])
+    candidate.pop("_id", None)
+
+    # Related job
+    job = None
+    if candidate.get("job_id"):
+        job_query = (
+            {"_id": ObjectId(candidate["job_id"])}
+            if ObjectId.is_valid(str(candidate["job_id"]))
+            else {"id": candidate["job_id"]}
+        )
+        job = db["jobs"].find_one(job_query)
+        if job:
+            job["id"] = str(job["_id"])
+            job.pop("_id", None)
+
+    # Related resume
+    resume = None
+    if candidate.get("resume_id"):
+        resume_query = (
+            {"_id": ObjectId(candidate["resume_id"])}
+            if ObjectId.is_valid(str(candidate["resume_id"]))
+            else {"id": candidate["resume_id"]}
+        )
+        resume = db["resumes"].find_one(resume_query)
+        if resume:
+            resume["id"] = str(resume["_id"])
+            resume.pop("_id", None)
+
+    # Same response structure as list API
+    return {
+        "candidates": [
+            {
+                "candidate": CandidateResponse(**candidate).dict(),
+                "job": JobResponse(**job).dict() if job else None,
+                "resume": resume if resume else None,
+            }
+        ],
+        # "pagination": {
+        #     "totalCount": 1,
+        #     "totalPages": 1,
+        #     "currentPage": 1,
+        #     "hasMore": False,
+        # },
+    }
+
