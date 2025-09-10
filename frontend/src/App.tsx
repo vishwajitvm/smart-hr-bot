@@ -7,6 +7,7 @@ import ResumeUploadPage from  "./pages/ResumeUpload"
 import JobOpenings from "./pages/JobOpenings";
 import JobOpeningsList from "./pages/JobOpeningsList";
 import ThankYouPage from "./pages/ThankYouPage";
+import ResumeScoringDashboard from "./pages/ResumeScoringDashboard";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/thank-you" element={<ThankYouPage />} />
+          <Route path="/resume-scoring" element={<ResumeScoringDashboard />} />
         </Routes>
       </div>
     </>

@@ -1,0 +1,267 @@
+/* ResumeScoring.css */
+
+/* --- General Layout --- */
+.resume-dashboard {
+  display: flex;
+  gap: 1rem;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f7f8fa;
+  padding: 1rem;
+  min-height: 100vh;
+}
+
+/* --- Filters Panel --- */
+.filters {
+  width: 260px;
+  background-color: #fff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.filters h3 {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.filters label {
+  font-weight: 600;
+  margin-top: 0.5rem;
+  margin-bottom: 0.2rem;
+  display: block;
+  color: #555;
+}
+
+.filters input, .filters select {
+  width: 100%;
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+}
+
+.filters button {
+  margin-top: 1rem;
+  background-color: #4a90e2;
+  color: #fff;
+  font-weight: 600;
+  padding: 0.6rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.filters button:hover {
+  background-color: #357ABD;
+}
+
+/* --- Results Panel --- */
+.results {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* --- Candidate Table --- */
+.candidate-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.candidate-table th, .candidate-table td {
+  padding: 0.8rem 1rem;
+  text-align: left;
+}
+
+.candidate-table th {
+  background-color: #4a90e2;
+  color: #fff;
+}
+
+.candidate-table tr:nth-child(even) {
+  background-color: #f1f3f6;
+}
+
+.candidate-table tr:hover {
+  background-color: #e1ecf7;
+}
+
+.candidate-table button {
+  background-color: #f5a623;
+  color: #fff;
+  border: none;
+  padding: 0.4rem 0.7rem;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.candidate-table button:hover {
+  background-color: #d48806;
+}
+
+/* --- Candidate Details Panel --- */
+.candidate-details {
+  background-color: #fff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+/* --- Tabs --- */
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.tabs button {
+  background-color: #f1f3f6;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+.tabs button.active {
+  background-color: #4a90e2;
+  color: #fff;
+}
+
+.tabs button:hover:not(.active) {
+  background-color: #dbe6f7;
+}
+
+/* --- Charts Layout --- */
+.charts {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+  justify-content: space-between;
+}
+
+/* --- Advanced Metrics --- */
+.advanced-metrics {
+  margin-top: 1.5rem;
+}
+
+.advanced-metrics h4 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.advanced-metrics ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.advanced-metrics li {
+  padding: 0.3rem 0;
+  font-size: 0.95rem;
+}
+
+/* --- Chat Tab --- */
+.chat-tab {
+  margin-top: 1rem;
+}
+
+.chat-box {
+  background-color: #f1f3f6;
+  padding: 1rem;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.chat-box .messages p {
+  margin: 0;
+  background-color: #fff;
+  padding: 0.5rem;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+.chat-input {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.chat-input button {
+  background-color: #4a90e2;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.chat-input button:hover {
+  background-color: #357ABD;
+}
+
+/* --- Comparison Tab --- */
+.comparison-tab {
+  margin-top: 1rem;
+}
+
+.comparison-tab table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.comparison-tab th, .comparison-tab td {
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.comparison-tab th {
+  background-color: #4a90e2;
+  color: #fff;
+}
+
+/* --- Responsive --- */
+@media screen and (max-width: 1024px) {
+  .resume-dashboard {
+    flex-direction: column;
+  }
+  .filters {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .charts {
+    flex-direction: column;
+    align-items: center;
+  }
+}
