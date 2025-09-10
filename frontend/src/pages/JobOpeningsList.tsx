@@ -40,11 +40,11 @@ export default function JobOpeningsList() {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
-  const jobsPerPage = 5;
+  const jobsPerPage = 8; // 4 cards per row * 2 rows
   const [notification, setNotification] = useState<{
-      message: string;
-      type: "is-success" | "is-danger" | "is-warning" | "is-info" | "" ;
-    }>({ message: "", type: "" });
+    message: string;
+    type: "is-success" | "is-danger" | "is-warning" | "is-info" | "";
+  }>({ message: "", type: "" });
 
   const navigate = useNavigate();
 
@@ -69,7 +69,6 @@ export default function JobOpeningsList() {
     }
   };
 
-  // Search jobs
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const term = e.target.value.toLowerCase();
     setSearchTerm(term);
@@ -83,7 +82,6 @@ export default function JobOpeningsList() {
     setCurrentPage(1);
   };
 
-  // Delete Job
   const handleDelete = async (id: string) => {
     const result = await Swal.fire({
       title: "Are you sure?",
@@ -105,7 +103,6 @@ export default function JobOpeningsList() {
     }
   };
 
-  // Toggle status
   const handleStatusToggle = async (job: Job) => {
     const newStatus = job.status === 1 ? 0 : 1;
     try {
@@ -125,14 +122,13 @@ export default function JobOpeningsList() {
     }
   };
 
-  // Preview Job
   const handlePreview = async (id: string) => {
     try {
       const res = await fetchJobById(id);
       const job: Job = res.data;
 
       Swal.fire({
-        title: `<h2 class="title is-4">${job.title}</h2>`,
+        title: `<h2 class="title is-4 has-text-dark">${job.title}</h2>`,
         html: `
           <div class="card">
             <div class="card-content has-text-left">
@@ -209,9 +205,7 @@ export default function JobOpeningsList() {
           <div className="control">
             <button
               className="button is-primary"
-              onClick={
-                () => navigate("/create-job-openings")
-              }
+              onClick={() => navigate("/create-job-openings")}
             >
               + Add Job
             </button>
@@ -221,83 +215,58 @@ export default function JobOpeningsList() {
 
       {loading ? (
         <p>Loading...</p>
+      ) : currentJobs.length === 0 ? (
+        <p className="has-text-centered">No jobs found</p>
       ) : (
-        <div className="table-container">
-          <table className="table is-striped is-hoverable is-fullwidth custom-table">
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Department</th>
-                <th>Location</th>
-                <th>Type</th>
-                <th>Experience</th>
-                <th>Openings</th>
-                <th>Status</th>
-                <th>Salary</th>
-                <th className="has-text-centered">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentJobs.length > 0 ? (
-                currentJobs.map((job) => (
-                  <tr key={job.id}>
-                    <td>{job.title}</td>
-                    <td>{job.department || "-"}</td>
-                    <td>{job.location || "-"}</td>
-                    <td>{job.type}</td>
-                    <td>{job.experience}</td>
-                    <td>{job.openings}</td>
-                    <td>
-                      <label className="switch">
-                        <input
-                          type="checkbox"
-                          checked={job.status === 1}
-                          onChange={() => handleStatusToggle(job)}
-                        />
-                        <span className="check"></span>
-                      </label>
-                    </td>
-                    <td>{job.salary || "-"}</td>
-                    <td className="has-text-centered">
-                      <button
-                        className="button is-small is-info mr-2"
-                        onClick={() => handlePreview(job.id)}
-                      >
-                        Preview
-                      </button>
-                      <button
-                        className="button is-small is-warning mr-2"
-                        onClick={() =>
-                          Swal.fire("Edit Job", job.title, "info")
-                        }
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="button is-small is-danger"
-                        onClick={() => handleDelete(job.id)}
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={9} className="has-text-centered">
-                    No jobs found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+        <div className="columns is-multiline">
+          {currentJobs.map((job) => (
+            <div className="column is-3" key={job.id}>
+              <div className="card job-card">
+                <header className="card-header">
+                  <p className="card-header-title">{job.title}</p>
+                </header>
+
+                <div className="card-content">
+                  <p><strong className="has-text-dark">Dept:</strong> {job.department || "-"}</p>
+                  <p><strong className="has-text-dark">Location:</strong> {job.location || "-"}</p>
+                  <p><strong className="has-text-dark">Type:</strong> {job.type || "-"}</p>
+                  <p><strong className="has-text-dark">Experience:</strong> {job.experience || "-"}</p>
+                  <p><strong className="has-text-dark">Openings:</strong> {job.openings || "-"}</p>
+                </div>
+
+                <footer className="card-footer job-footer">
+                  <span className="card-footer-item" onClick={() => handlePreview(job.id)}>
+                    <span className="icon has-text-info"><i className="fas fa-eye"></i></span>
+                  </span>
+                  <span className="card-footer-item" onClick={() => Swal.fire("Edit Job", job.title, "info")}>
+                    <span className="icon has-text-warning"><i className="fas fa-edit"></i></span>
+                  </span>
+                  <span className="card-footer-item" onClick={() => handleDelete(job.id)}>
+                    <span className="icon has-text-danger"><i className="fas fa-trash"></i></span>
+                  </span>
+                  <span className="card-footer-item">
+                    <label className="toggle-switch">
+                      {/* <span className="toggle-label">{job.status === 1 ? "Active" : "Inactive"}</span> */}
+                      <input
+                        type="checkbox"
+                        checked={job.status === 1}
+                        onChange={() => handleStatusToggle(job)}
+                      />
+                      <span className="toggle-slider"></span>
+                    </label>
+                  </span>
+                </footer>
+
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
       {/* Pagination */}
       {totalPages > 1 && (
         <nav
-          className="pagination is-centered"
+          className="pagination is-centered mt-5"
           role="navigation"
           aria-label="pagination"
         >
@@ -319,9 +288,7 @@ export default function JobOpeningsList() {
             {Array.from({ length: totalPages }, (_, i) => (
               <li key={i}>
                 <button
-                  className={`pagination-link ${
-                    currentPage === i + 1 ? "is-current" : ""
-                  }`}
+                  className={`pagination-link ${currentPage === i + 1 ? "is-current" : ""}`}
                   onClick={() => setCurrentPage(i + 1)}
                 >
                   {i + 1}

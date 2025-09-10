@@ -394,13 +394,13 @@ const ResumeUpload: React.FC = () => {
             {selectedJob && (
               <div>
                 <h3>{selectedJob.title}</h3>
-                <p><strong>Department:</strong> {selectedJob.department}</p>
-                <p><strong>Location:</strong> {selectedJob.location}</p>
-                <p><strong>Work Mode:</strong> {selectedJob.workMode}</p>
-                <p><strong>Type:</strong> {selectedJob.type}</p>
-                <p><strong>Experience:</strong> {selectedJob.experience}</p>
-                <p><strong>Openings:</strong> {selectedJob.openings}</p>
-                <p><strong>Salary:</strong> {selectedJob.salary}</p>
+                <p><strong className="has-text-dark">Department:</strong> {selectedJob.department}</p>
+                <p><strong className="has-text-dark">Location:</strong> {selectedJob.location}</p>
+                <p><strong className="has-text-dark">Work Mode:</strong> {selectedJob.workMode}</p>
+                <p><strong className="has-text-dark">Type:</strong> {selectedJob.type}</p>
+                <p><strong className="has-text-dark">Experience:</strong> {selectedJob.experience}</p>
+                <p><strong className="has-text-dark">Openings:</strong> {selectedJob.openings}</p>
+                <p><strong className="has-text-dark">Salary:</strong> {selectedJob.salary}</p>
 
                 {/* Render rich text safely */}
                 <div className="job-section">

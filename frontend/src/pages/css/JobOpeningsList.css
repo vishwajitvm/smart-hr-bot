@@ -1,141 +1,145 @@
-/* Light theme clean look */
-body {
-  background-color: #f9f9f9; /* light background */
-  color: #363636;
-  margin: 0;
-  min-height: 100vh; /* ensures it covers full height */
+/* Card styling */
+.job-card {
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: default;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  padding: 1rem;
 }
 
-
-.custom-table th,
-.custom-table td {
-  vertical-align: middle !important;
+.job-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.12);
 }
 
-/* Ensure table rows stay white */
-.table tbody tr {
-  background-color: #ffffff !important;
-  color: #363636 !important;
-}
-
-/* Zebra striping (optional for readability) */
-.table tbody tr:nth-child(even) {
-  background-color: #f9f9f9 !important;
-}
-
-/* Table headers */
-.table thead th {
-  background-color: #f0f0f0 !important;
-  color: #363636 !important;
-  text-align: center;
+.job-card .card-header-title {
   font-weight: 600;
-  border-bottom: 2px solid #e0e0e0;
-}
-
-/* Table cells */
-.table td {
-  text-align: center;
-  background-color: transparent !important;
-  color: #363636 !important;
-  border-bottom: 1px solid #eee;
-}
-
-/* Remove any global dark theme */
-.table.is-dark,
-.table.is-dark th,
-.table.is-dark td {
-  background-color: #ffffff !important;
-  color: #363636 !important;
-}
-
-
-/* Action buttons spacing */
-.table td .button {
-  min-width: 70px;
-}
-
-/* Fix misaligned switch */
-.switch {
-  display: inline-flex;
-  align-items: center;
-}
-
-/* Job preview popup */
-.job-preview-popup {
-  background: #ffffff !important;
-  border-radius: 12px !important;
-  padding: 0 !important;
-  font-family: "Inter", "Roboto", sans-serif;
-  color: #333;
-  max-height: 80vh;
-  overflow-y: auto;
-}
-
-/* Card styling inside preview */
-.job-preview-popup .card {
-  box-shadow: none;
-  border: none;
-  background: transparent;
-}
-
-.job-preview-popup .card-content {
-  padding: 1.5rem 1.8rem;
-  font-size: 0.95rem;
-  line-height: 1.6;
-  color: #444;
-}
-
-.job-preview-popup h2,
-.job-preview-popup h3 {
+  font-size: 1rem;
   margin-bottom: 0.5rem;
-  font-weight: 600;
 }
 
-.job-preview-popup h2.title {
-  font-size: 1.5rem;
-  color: #2a2a2a;
+.job-card .card-content p {
+  margin: 0.2rem 0;
+  font-size: 0.9rem;
+  color: #4a4a4a;
 }
 
-.job-preview-popup h3.subtitle {
-  margin-top: 1.2rem;
+.card-footer-item .icon {
   font-size: 1.2rem;
-  color: #222;
+  cursor: pointer;
+  transition: transform 0.15s;
 }
 
-.job-preview-popup p {
-  margin: 0.3rem 0;
+.card-footer-item .icon:hover {
+  transform: scale(1.2);
 }
 
-/* Strong labels */
-.job-preview-popup strong {
-  color: #1a1a1a;
+/* Footer styling */
+.job-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.8rem;
 }
 
-/* Section spacing */
-.job-preview-popup hr {
-  margin: 1rem 0;
-  border: none;
-  border-top: 1px solid #ddd;
+/* Modern toggle switch */
+.toggle-switch {
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+  gap: 0.5rem;
 }
 
-/* Content sections */
-.job-preview-popup .content {
-  margin: 0.6rem 0;
+.toggle-switch input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: relative;
+  width: 40px;
+  height: 20px;
+  background-color: #d3d3d3;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.toggle-slider::before {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: #fff;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background-color: #48c774; /* Bulma success green */
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+  transform: translateX(20px);
+}
+
+.toggle-label {
+  min-width: 50px;
+  text-align: left;
+  color: #4a4a4a;
+  font-weight: 500;
+}
+
+/* Columns for 4 cards per row */
+.columns.is-multiline {
+  margin-left: -0.5rem;
+  margin-right: -0.5rem;
+}
+
+.column.is-3 {
   padding-left: 0.5rem;
-  color: #333;
+  padding-right: 0.5rem;
 }
 
-/* SweetAlert2 buttons */
-.swal2-popup .swal2-confirm {
-  background-color: #3273dc !important; /* Bulma primary */
-  border-radius: 6px !important;
-  padding: 0.6rem 1.2rem !important;
-  font-weight: 500;
+/* Pagination spacing */
+.pagination {
+  margin-top: 2rem;
 }
 
-.swal2-popup .swal2-cancel {
-  background-color: #f14668 !important; /* Bulma danger */
-  border-radius: 6px !important;
-  padding: 0.6rem 1.2rem !important;
-  font-weight: 500;
+/* SweetAlert2 Job Preview Custom Style */
+.job-preview-popup {
+  background-color: #ffffff !important; /* White background */
+  color: #000000 !important; /* Black text */
+  font-family: "Helvetica", "Arial", sans-serif;
 }
+
+/* Force inner card content text to be black */
+.job-preview-popup .card-content,
+.job-preview-popup p,
+.job-preview-popup strong,
+.job-preview-popup h2,
+.job-preview-popup h3,
+.job-preview-popup .content {
+  color: #000000 !important;
+}
+
+.job-preview-popup .card:hover {
+  transform: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important; /* subtle shadow */
+}
+
+/* Optional: remove box-shadow or make subtle */
+.job-preview-popup .card {
+  background-color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
