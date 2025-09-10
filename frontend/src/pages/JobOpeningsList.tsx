@@ -29,7 +29,7 @@ interface Job {
   status?: number;
   hiringManager?: string;
   visibility?: string;
-  applicationMethod?: string;
+  // applicationMethod?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -143,7 +143,6 @@ export default function JobOpeningsList() {
               <p><strong>Salary:</strong> ${job.salary || "-"}</p>
               <p><strong>Hiring Manager:</strong> ${job.hiringManager || "-"}</p>
               <p><strong>Visibility:</strong> ${job.visibility || "-"}</p>
-              <p><strong>Application Method:</strong> ${job.applicationMethod || "-"}</p>
               <hr>
               <h3 class="subtitle is-5">Description</h3>
               <div class="content">${job.description || "N/A"}</div>
@@ -167,6 +166,21 @@ export default function JobOpeningsList() {
       setNotification({ message: "Failed to fetch job details.", type: "is-danger" });
     }
   };
+
+  const handleEdit = async (jobId: string) => {
+  const result = await Swal.fire({
+    title: "Are you sure?",
+    text: "Do you want to edit this job?",
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "Yes, edit it",
+    cancelButtonText: "Cancel",
+  });
+
+  if (result.isConfirmed) {
+    navigate(`/edit-job-openings/${jobId}`);
+  }
+};
 
   // Pagination
   const indexOfLastJob = currentPage * jobsPerPage;
@@ -240,9 +254,17 @@ export default function JobOpeningsList() {
                   <span className="card-footer-item" onClick={() => handlePreview(job.id)}>
                     <span className="icon has-text-info"><i className="fas fa-eye"></i></span>
                   </span>
-                  <span className="card-footer-item" onClick={() => Swal.fire("Edit Job", job.title, "info")}>
+                  {/* <span className="card-footer-item" onClick={() => Swal.fire("Edit Job", job.title, "info")}>
                     <span className="icon has-text-warning"><i className="fas fa-edit"></i></span>
-                  </span>
+                  </span> */}
+                  <span
+  className="card-footer-item"
+  onClick={() => handleEdit(job.id)}
+>
+  <span className="icon has-text-warning">
+    <i className="fas fa-edit"></i>
+  </span>
+</span>
                   <span className="card-footer-item" onClick={() => handleDelete(job.id)}>
                     <span className="icon has-text-danger"><i className="fas fa-trash"></i></span>
                   </span>

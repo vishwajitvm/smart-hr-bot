@@ -21,7 +21,7 @@ class JobBase(BaseModel):
     status: Optional[int] = 2  # 0 = Inactive, 1 = Active, 2 = Draft
     hiringManager: Optional[str] = None
     visibility: Optional[str] = "Public"
-    applicationMethod: Optional[str] = "Direct Apply"
+    # applicationMethod: Optional[str] = "Direct Apply"
     
     model: Optional[str] = None
     duration_ms: Optional[int] = None
