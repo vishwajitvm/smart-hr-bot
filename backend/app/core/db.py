@@ -18,6 +18,7 @@ tokens_collection = db["tokens"]
 keka_tokens_collection = db["keka_tokens"]
 candidates_collection = db["candidates"]
 jobs_collection = db["jobs"]
+candidate_scores_collection = db["candidate_scores"]
 
 # Encryption helpers
 def encrypt_token(token: str) -> str:

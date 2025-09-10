@@ -4,6 +4,7 @@ import "./css/ResumeUpload.css";
 import {
   uploadResume,
   submitCandidateDetails,
+  generateCandidateScore,
   fetchAllJobs
 } from "../services/api";
 
@@ -239,9 +240,21 @@ const ResumeUpload: React.FC = () => {
         resume_url: resumeData.resume_url || null,
       };
 
-      await submitCandidateDetails(payload);
+      const submitResponse = await submitCandidateDetails(payload);
       // alert("Application submitted successfully!");
       setNotification({ message: "Application submitted successfully!", type: "is-success" });
+      
+       // Call candidate scoring API using the returned candidate ID
+    if (submitResponse.data && submitResponse.data.id) {
+      try {
+        const scoreResponse = await generateCandidateScore(submitResponse.data.id);
+        console.log("Candidate score generated:", scoreResponse.data);
+        // Optional: show score in UI or update state
+      } catch (scoreError) {
+        console.error("Error generating candidate score:", scoreError);
+      }
+    }
+    
       setTimeout(() => {
         navigate("/thank-you");
       }, 1000);
