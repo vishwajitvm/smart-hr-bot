@@ -135,5 +135,17 @@ export const generateJobDetails = async (title: string) => {
   });
 };
 
+/* -------------------------------------------------------------------------- */
+/*                         Candidate Scoring APIs                              */
+/* -------------------------------------------------------------------------- */
+export const generateCandidateScore = async (
+  candidateId: string
+) => {
+  return api.post("/candidate-scoring/generate-score", {
+    candidate_id: candidateId,
+  }, {
+    headers: { "Content-Type": "application/json" },
+  });
+};
 
 export default api;

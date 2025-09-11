@@ -1,39 +1,40 @@
 .login-container {
-  max-width: 400px;
-  margin: 3rem auto;
-  padding: 2rem;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.login-container h2 {
-  text-align: center;
-  margin-bottom: 1.5rem;
-}
-
-.login-form {
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  justify-content: center;  /* Horizontal center */
+  align-items: center;      /* Vertical center */
+  height: 100vh;
+  background: #f8f9fa;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.login-form input {
-  padding: 0.75rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+.login-box {
+  text-align: center; /* center text and button */
 }
 
-.login-form button {
-  padding: 0.75rem;
-  border: none;
-  background: #343a40;
+.login-box h2 {
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 1.8rem;
+}
+
+.ms-login-btn {
+  background-color: #2f2f2f; /* Microsoft dark theme */
   color: white;
-  font-weight: bold;
+  border: none;
+  padding: 12px 30px;
+  font-size: 1rem;
+  border-radius: 6px;
   cursor: pointer;
-  border-radius: 4px;
+  font-weight: 500;
+  display: flex;
+  justify-content: center;  /* center icon + text */
+  align-items: center;
+  gap: 8px;
+  transition: background 0.3s ease, transform 0.2s ease;
+  margin: 0 auto; /* ensure button stays centered */
 }
 
-.login-form button:hover {
-  background: #495057;
+.ms-login-btn:hover {
+  background-color: #000000;
+  transform: translateY(-2px);
 }
