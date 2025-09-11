@@ -1,14 +1,105 @@
 .home {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* Hero Section */
+.hero {
   text-align: center;
-  margin-top: 3rem;
+  padding: 80px 20px;
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: white;
 }
 
-.home h2 {
+.hero h1 {
+  font-size: 3rem;
+  margin-bottom: 20px;
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  max-width: 700px;
+  margin: 0 auto 30px auto;
+}
+
+.cta-btn {
+  background: white;
+  color: #0077b6;
+  border: none;
+  padding: 12px 30px;
+  font-size: 1rem;
+  border-radius: 30px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.cta-btn:hover {
+  background: #0077b6;
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* Features Section */
+.features {
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.features h2 {
   font-size: 2rem;
-  margin-bottom: 1rem;
+  margin-bottom: 40px;
 }
 
-.home p {
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.feature-card {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+}
+
+.feature-card h3 {
+  font-size: 1.3rem;
+  margin-bottom: 10px;
+  color: #0077b6;
+}
+
+/* About Section */
+.about {
+  background: #f8f9fa;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.about h2 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+.about p {
+  max-width: 800px;
+  margin: 0 auto;
   font-size: 1.1rem;
   color: #555;
+}
+
+/* Footer */
+.footer {
+  background: #0077b6;
+  color: white;
+  text-align: center;
+  padding: 15px;
+  margin-top: 40px;
 }

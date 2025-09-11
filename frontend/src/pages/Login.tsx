@@ -1,37 +1,19 @@
-import { useState } from "react";
 import "./css/Login.css";
 
 function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
-  const handleSubmit = (e: { preventDefault: () => void; }) => {
-    e.preventDefault();
-    alert(`Logging in with: ${email}`);
+  const handleMicrosoftLogin = () => {
+    // Redirect to Microsoft OAuth login (placeholder)
+    window.location.href = "https://login.microsoftonline.com/common/oauth2/v2.0/authorize";
   };
 
   return (
     <div className="login-container">
-      <h2>Login</h2>
-      <form className="login-form" onSubmit={handleSubmit}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-
-        <button type="submit">Login</button>
-      </form>
+      <div className="login-box">
+        <h2>Login</h2>
+        <button className="ms-login-btn" onClick={handleMicrosoftLogin}>
+          🔑 Login with Microsoft
+        </button>
+      </div>
     </div>
   );
 }
