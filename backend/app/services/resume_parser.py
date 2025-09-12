@@ -24,17 +24,75 @@ class ResumeParserService:
             google_api_key=api_key
         )
 
+    def _normalize(self, parsed: dict) -> dict:
+        """
+        Ensure schema consistency:
+        - Extract extra emails/phones
+        - Collect unexpected fields
+        """
+        schema = {
+            "name": "",
+            "email": "",
+            "phone": "",
+            "location": "",
+            "years_of_experience": "",
+            "skills": [],
+            "experience_summary": "",
+            "education": [],
+            "projects": [],
+            "certifications": [],
+            "languages": [],
+            "interests": [],
+            "hobbies": [],
+            "role_specific_highlights": [],
+            "other_emails": [],
+            "other_phones": [],
+            "candidate_other_details": {}
+        }
+
+        normalized = schema.copy()
+
+        # --- handle canonical keys first ---
+        for key in schema:
+            if key in parsed:
+                normalized[key] = parsed[key]
+
+        # --- handle multiple emails ---
+        if "email" in parsed:
+            if isinstance(parsed["email"], list) and parsed["email"]:
+                normalized["email"] = parsed["email"][0]  # first is primary
+                normalized["other_emails"] = parsed["email"][1:]
+            elif isinstance(parsed["email"], str):
+                normalized["email"] = parsed["email"]
+
+        # --- handle multiple phones ---
+        if "phone" in parsed:
+            if isinstance(parsed["phone"], list) and parsed["phone"]:
+                normalized["phone"] = parsed["phone"][0]
+                normalized["other_phones"] = parsed["phone"][1:]
+            elif isinstance(parsed["phone"], str):
+                normalized["phone"] = parsed["phone"]
+
+        # --- collect unexpected fields ---
+        for key, value in parsed.items():
+            if key not in normalized:
+                normalized["candidate_other_details"][key] = value
+
+        return normalized
+
     def parse_resume(self, text: str) -> dict:
         """Parse resume text into structured JSON"""
         prompt = f"""
-        You are a professional Resume Parser.
-        Extract ONLY valid JSON (no text, no markdown).
+        You are a strict Resume Parser.
+        You must return ONLY valid JSON (no explanations, no natural text).
+        Always pick the most likely single value for fields (e.g., one name, one email, one phone).
+        If multiple values exist for email/phone, return them as an array.
 
         Required schema:
         {{
-          "name": "<full name>",
-          "email": "<email address>",
-          "phone": "<phone number>",
+          "name": "<full name or list if multiple>",
+          "email": "<email or list if multiple>",
+          "phone": "<phone or list if multiple>",
           "location": "<city, country>",
           "years_of_experience": "<number of years if available>",
           "skills": ["skill1", "skill2", "skill3"],
@@ -57,10 +115,7 @@ class ResumeParserService:
           "languages": ["English", "French", "Spanish"],
           "interests": ["interest1", "interest2"],
           "hobbies": ["hobby1", "hobby2"],
-          "role_specific_highlights": [
-            "<highlight 1>",
-            "<highlight 2>"
-          ]
+          "role_specific_highlights": ["<highlight1>", "<highlight2>"]
         }}
 
         Resume text:
@@ -70,24 +125,25 @@ class ResumeParserService:
         try:
             response = self.llm.invoke(prompt)
 
-            # ✅ Handle different response formats
             if hasattr(response, "content"):
-                if isinstance(response.content, list):
-                    parsed_text = response.content[0].text
-                else:
-                    parsed_text = response.content
+                parsed_text = (
+                    response.content[0].text
+                    if isinstance(response.content, list)
+                    else response.content
+                )
             else:
                 parsed_text = str(response)
 
             parsed_text = parsed_text.strip()
             logging.info(f"Raw LLM output: {parsed_text}")
 
-            # ✅ Remove markdown fences like ```json ... ```
+            # clean markdown fences
             cleaned = re.sub(r"^```(?:json)?", "", parsed_text, flags=re.IGNORECASE).strip()
             cleaned = re.sub(r"```$", "", cleaned).strip()
 
-            # ✅ Load as JSON
-            return json.loads(cleaned)
+            parsed = json.loads(cleaned)
+
+            return self._normalize(parsed)
 
         except Exception as e:
             logging.error(f"Parsing failed: {e}", exc_info=True)
@@ -105,5 +161,8 @@ class ResumeParserService:
                 "languages": [],
                 "interests": [],
                 "hobbies": [],
-                "role_specific_highlights": []
+                "role_specific_highlights": [],
+                "other_emails": [],
+                "other_phones": [],
+                "candidate_other_details": {}
             }
