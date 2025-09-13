@@ -49,7 +49,7 @@ def calculate_keyword_density(resume_text: str, job_keywords: List[str]) -> Dict
         return {"required_keywords": 0, "matched": 0, "percentage": 0}
 
 
-# Backwards compatibility helper (other modules may import)
+# Backwards compatibility helper
 def extract_first_json_object(text: str) -> dict:
     return llm_service.sanitize_json(text)
 
@@ -69,9 +69,10 @@ async def extract_dynamic_scores(candidate_data: Dict, job_data: Dict, resume_te
     precomputed_experience_score = calculate_experience_score(candidate_data.get("years_of_experience", 0))
     precomputed_keyword_density = calculate_keyword_density(resume_text, job_data.get("keywords", []) if job_data else [])
 
+    # Pass actual years of experience, not precomputed percentage
     prompt = scoring_prompt_template.format(
         skills=", ".join(candidate_data.get("skills", []) or []),
-        experience=precomputed_experience_score,
+        experience=str(candidate_data.get("years_of_experience", 0)),
         resume_text=resume_text or "",
         job_description=(job_data.get("description") if job_data else "") or "",
         precomputed_skills_score=precomputed_skills_score,
@@ -92,12 +93,11 @@ async def extract_dynamic_scores(candidate_data: Dict, job_data: Dict, resume_te
             "readability", "cultural_fit", "domain_relevance", "certifications_score"
         ]
         for k in numeric_keys:
-            if k in data:
-                try:
-                    data[k] = int(max(0, min(100, int(data[k]))))
-                except Exception:
-                    data[k] = 0
-            else:
+            val = data.get(k, 0)
+            try:
+                val = int(val)
+                data[k] = max(0, min(100, val))
+            except Exception:
                 data[k] = 0
 
         # Ensure nested/defaults
@@ -111,7 +111,7 @@ async def extract_dynamic_scores(candidate_data: Dict, job_data: Dict, resume_te
 
     except LLMServiceError as e:
         logger.warning(f"[scoring_chain] LLMService failed: {e}")
-        return {}  # caller will handle fallback
+        return {}
     except Exception as e:
         logger.exception(f"[scoring_chain] Unexpected error extracting dynamic scores: {e}")
         return {}
@@ -169,15 +169,11 @@ async def generate_candidate_score(candidate_data: Dict, job_data: Optional[Dict
     ]
     subjective_component = int(round(sum(subjective_components) / len(subjective_components))) if any(subjective_components) else 0
 
-    if subjective_component > 0:
-        overall_score = int(round(deterministic_component * 0.65 + subjective_component * 0.35))
-    else:
-        overall_score = deterministic_component
-
+    overall_score = int(round(deterministic_component * 0.65 + subjective_component * 0.35)) if subjective_component > 0 else deterministic_component
     overall_score = max(0, min(100, overall_score))
     fitment_score = int(round((overall_score + scoring_breakdown.skills) / 2))
 
-    # Fitment status (matches your prompt rules)
+    # Fitment status
     if overall_score > 70:
         fitment_status = "Good Fit"
     elif 50 <= overall_score <= 70:
@@ -209,12 +205,12 @@ async def generate_candidate_score(candidate_data: Dict, job_data: Optional[Dict
 
     # Strengths & weaknesses
     strengths = {
-        "technical": dynamic.get("strengths", {}).get("technical", skills_matched)[:5] if dynamic.get("strengths") else skills_matched[:5],
-        "soft": dynamic.get("strengths", {}).get("soft", sentiment.soft_skills_extraction)[:5]
+        "technical": dynamic.get("strengths", {}).get("technical") or skills_matched[:5],
+        "soft": dynamic.get("strengths", {}).get("soft") or sentiment.soft_skills_extraction[:5]
     }
     weaknesses = {
-        "technical": dynamic.get("weaknesses", {}).get("technical", skills_missing)[:5],
-        "soft": dynamic.get("weaknesses", {}).get("soft", [])[:5]
+        "technical": dynamic.get("weaknesses", {}).get("technical") or skills_missing[:5],
+        "soft": dynamic.get("weaknesses", {}).get("soft") or []
     }
 
     now = datetime.utcnow()
@@ -233,7 +229,7 @@ async def generate_candidate_score(candidate_data: Dict, job_data: Optional[Dict
         fitment_status=fitment_status,
         ranking_score=None,
         percentile=None,
-        scoring_version="v1.1",
+        scoring_version="v1.2",
         deleted=False,
         deleted_at=None,
         created_at=now,
