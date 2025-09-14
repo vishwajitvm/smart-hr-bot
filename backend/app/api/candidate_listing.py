@@ -3,10 +3,11 @@ from fastapi.params import Body
 from app.core.db import db
 from app.models.candidate import CandidateResponse
 from app.models.job import JobResponse
+from app.models.scoring import CandidateScore
 from pydantic import BaseModel
 from bson import ObjectId
 
-router = APIRouter(prefix="/candidates", tags=["Candidates"])
+router = APIRouter(prefix="/candidates-listing-with-score", tags=["Candidates"])
 
 
 # Request model for pagination
@@ -18,7 +19,7 @@ class CandidateListRequest(BaseModel):
 @router.post("/list")
 async def list_candidates(payload: CandidateListRequest):
     """
-    Fetch paginated candidate list with related job and resume details.
+    Fetch paginated candidate list with related job, resume, and score details.
     Accepts JSON body:
     {
         "page": 1,
@@ -37,6 +38,7 @@ async def list_candidates(payload: CandidateListRequest):
     candidates_cursor = (
         db["candidates"]
         .find({"deleted": False})
+        .sort("_id", -1)
         .skip(skip)
         .limit(limit)
     )
@@ -75,10 +77,22 @@ async def list_candidates(payload: CandidateListRequest):
                 resume["id"] = str(resume["_id"])
                 resume.pop("_id", None)
 
+        # fetch related candidate score
+        score = None
+        score_doc = db["candidate_scores"].find_one({"candidate_id": candidate["id"], "deleted": False})
+        if score_doc:
+            score_doc["id"] = str(score_doc["_id"])
+            score_doc.pop("_id", None)
+            try:
+                score = CandidateScore(**score_doc).dict()
+            except Exception:
+                score = score_doc  # fallback raw dict if validation fails
+
         result.append({
             "candidate": CandidateResponse(**candidate).dict(),
             "job": JobResponse(**job).dict() if job else None,
             "resume": resume if resume else None,
+            "score": score
         })
 
     # pagination info
@@ -94,12 +108,12 @@ async def list_candidates(payload: CandidateListRequest):
             "hasMore": has_more,
         }
     }
-  
-    
+
+
 @router.post("/get-candidate-by-id")
 async def get_candidate_by_id(payload: dict = Body(...)):
     """
-    Fetch a single candidate by ID (POST) with related job and resume details.
+    Fetch a single candidate by ID (POST) with related job, resume, and score details.
     Request Body:
     {
         "candidate_id": "abc123"
@@ -150,6 +164,17 @@ async def get_candidate_by_id(payload: dict = Body(...)):
             resume["id"] = str(resume["_id"])
             resume.pop("_id", None)
 
+    # Related candidate score
+    score = None
+    score_doc = db["candidate_scores"].find_one({"candidate_id": candidate["id"], "deleted": False})
+    if score_doc:
+        score_doc["id"] = str(score_doc["_id"])
+        score_doc.pop("_id", None)
+        try:
+            score = CandidateScore(**score_doc).dict()
+        except Exception:
+            score = score_doc
+
     # Same response structure as list API
     return {
         "candidates": [
@@ -157,13 +182,7 @@ async def get_candidate_by_id(payload: dict = Body(...)):
                 "candidate": CandidateResponse(**candidate).dict(),
                 "job": JobResponse(**job).dict() if job else None,
                 "resume": resume if resume else None,
+                "score": score
             }
-        ],
-        # "pagination": {
-        #     "totalCount": 1,
-        #     "totalPages": 1,
-        #     "currentPage": 1,
-        #     "hasMore": False,
-        # },
+        ]
     }
-

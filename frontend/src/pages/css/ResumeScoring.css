@@ -1,47 +1,41 @@
-/* ResumeScoring.css */
-
 /* --- General Layout --- */
 .resume-dashboard {
   display: flex;
   gap: 1rem;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f7f8fa;
+  background-color: #f5f6fa;
   padding: 1rem;
   min-height: 100vh;
 }
 
 /* --- Filters Panel --- */
 .filters {
-  width: 260px;
+  width: 280px;
   background-color: #fff;
   padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
 .filters h3 {
-  font-size: 1.2rem;
-  margin-bottom: 1rem;
+  font-size: 1.4rem;
   color: #333;
 }
 
 .filters label {
   font-weight: 600;
-  margin-top: 0.5rem;
-  margin-bottom: 0.2rem;
-  display: block;
   color: #555;
 }
 
 .filters input, .filters select {
   width: 100%;
-  padding: 0.4rem 0.6rem;
-  border-radius: 6px;
+  padding: 0.5rem;
+  border-radius: 8px;
   border: 1px solid #ccc;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
 }
 
 .filters button {
@@ -51,7 +45,7 @@
   font-weight: 600;
   padding: 0.6rem;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   transition: 0.2s;
 }
@@ -73,9 +67,9 @@
   width: 100%;
   border-collapse: collapse;
   background-color: #fff;
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
 .candidate-table th, .candidate-table td {
@@ -101,7 +95,7 @@
   color: #fff;
   border: none;
   padding: 0.4rem 0.7rem;
-  border-radius: 5px;
+  border-radius: 6px;
   cursor: pointer;
   font-size: 0.85rem;
 }
@@ -114,25 +108,23 @@
 .candidate-details {
   background-color: #fff;
   padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  margin-top: 1rem;
 }
 
-/* --- Tabs --- */
 .tabs {
   display: flex;
-  gap: 0.5rem;
+  gap: 1rem;
   margin-bottom: 1rem;
 }
 
 .tabs button {
-  background-color: #f1f3f6;
-  border: none;
   padding: 0.5rem 1rem;
+  background: #f1f3f6;
+  border: none;
   border-radius: 6px;
   cursor: pointer;
-  font-weight: 600;
-  transition: 0.2s;
 }
 
 .tabs button.active {
@@ -140,128 +132,93 @@
   color: #fff;
 }
 
-.tabs button:hover:not(.active) {
-  background-color: #dbe6f7;
-}
-
-/* --- Charts Layout --- */
+/* --- Charts --- */
 .charts {
   display: flex;
   gap: 2rem;
   flex-wrap: wrap;
-  margin-top: 1rem;
-  justify-content: space-between;
+  padding-left: 2rem; /* fix for left-side label cut */
+  overflow-x: auto;    /* horizontal scroll if charts are wide */
+}
+
+/* Optional: make individual charts responsive */
+.charts > * {
+  flex-shrink: 0;   /* prevent shrinking that cuts labels */
 }
 
 /* --- Advanced Metrics --- */
-.advanced-metrics {
-  margin-top: 1.5rem;
-}
-
-.advanced-metrics h4 {
-  font-size: 1.1rem;
-  margin-bottom: 0.5rem;
-  color: #333;
-}
-
 .advanced-metrics ul {
-  list-style: none;
+  list-style-type: none;
   padding-left: 0;
 }
 
 .advanced-metrics li {
   padding: 0.3rem 0;
-  font-size: 0.95rem;
 }
 
 /* --- Chat Tab --- */
-.chat-tab {
-  margin-top: 1rem;
-}
-
 .chat-box {
-  background-color: #f1f3f6;
-  padding: 1rem;
+  border: 1px solid #ccc;
   border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-  max-height: 300px;
+  padding: 1rem;
+  background-color: #f9f9f9;
+}
+
+.chat-box .messages {
+  height: 150px;
   overflow-y: auto;
+  margin-bottom: 0.5rem;
 }
 
-.chat-box .messages p {
-  margin: 0;
-  background-color: #fff;
-  padding: 0.5rem;
-  border-radius: 6px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-}
-
-.chat-input {
+.chat-box .chat-input {
   display: flex;
   gap: 0.5rem;
-  margin-top: auto;
 }
 
-.chat-input input {
+.chat-box input {
   flex: 1;
-  padding: 0.5rem;
+  padding: 0.4rem;
   border-radius: 6px;
   border: 1px solid #ccc;
 }
 
-.chat-input button {
+.chat-box button {
+  padding: 0.4rem 0.7rem;
   background-color: #4a90e2;
   color: #fff;
   border: none;
-  padding: 0.5rem 1rem;
   border-radius: 6px;
   cursor: pointer;
-  font-weight: 600;
 }
 
-.chat-input button:hover {
+.chat-box button:hover {
   background-color: #357ABD;
 }
 
 /* --- Comparison Tab --- */
-.comparison-tab {
-  margin-top: 1rem;
-}
-
 .comparison-tab table {
   width: 100%;
   border-collapse: collapse;
-  background-color: #fff;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 .comparison-tab th, .comparison-tab td {
-  padding: 0.8rem 1rem;
-  border-bottom: 1px solid #eee;
+  padding: 0.6rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #ccc;
 }
 
-.comparison-tab th {
-  background-color: #4a90e2;
-  color: #fff;
+/* --- Tooltip Fix --- */
+.recharts-tooltip-wrapper {
+  pointer-events: none;
+  font-size: 0.85rem;
 }
 
-/* --- Responsive --- */
-@media screen and (max-width: 1024px) {
-  .resume-dashboard {
-    flex-direction: column;
-  }
-  .filters {
-    width: 100%;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-  .charts {
-    flex-direction: column;
-    align-items: center;
-  }
+/* --- Optional: scroll bar styling --- */
+.charts::-webkit-scrollbar {
+  height: 6px;
+}
+
+.charts::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.2);
+  border-radius: 3px;
 }

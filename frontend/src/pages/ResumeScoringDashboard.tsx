@@ -1,55 +1,60 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
-  PieChart, Pie, Cell
+  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
+  PieChart, Pie, Cell, Tooltip
 } from "recharts";
+import { fetchCandidatesWithScores, fetchCandidateWithScoreById } from "../services/api";
 import "./css/ResumeScoring.css";
 
 export default function ResumeScoringDashboard() {
+  const [candidates, setCandidates] = useState<any[]>([]);
   const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
   const [activeTab, setActiveTab] = useState("details");
   const [comparisonCandidates, setComparisonCandidates] = useState<any[]>([]);
-
-  // Dummy candidate data
-  const candidates = [
-    { id: 1, name: "John Doe", email: "john@example.com", job: "Software Engineer", score: 78 },
-    { id: 2, name: "Jane Smith", email: "jane@example.com", job: "Data Scientist", score: 85 },
-  ];
-
-  // Dummy scoring breakdown
-  const scoreBreakdown = [
-    { subject: "Skills", A: 75 },
-    { subject: "Experience", A: 60 },
-    { subject: "Education", A: 85 },
-    { subject: "Projects", A: 70 },
-    { subject: "Keywords", A: 80 },
-    { subject: "ATS", A: 90 },
-    { subject: "Grammar", A: 88 },
-    { subject: "Soft Skills", A: 75 },
-  ];
-
-  const pieData = [
-    { name: "Skills", value: 25 },
-    { name: "Experience", value: 15 },
-    { name: "Education", value: 20 },
-    { name: "Projects", value: 15 },
-    { name: "Keywords", value: 10 },
-    { name: "ATS", value: 10 },
-    { name: "Grammar", value: 5 },
-  ];
+  const [pagination, setPagination] = useState({ currentPage: 1, totalPages: 1 });
 
   const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#0088FE", "#FFBB28", "#FF8042"];
 
-  // Advanced metrics placeholders
-  const sentimentAnalysis = "Positive";
-  const grammarScore = 90;
-  const atsScore = 85;
-  const skillMatchScore = 78;
-  const readabilityScore = 80;
+  useEffect(() => {
+    loadCandidates(1);
+  }, []);
+
+  const loadCandidates = async (page: number) => {
+    try {
+      const res: any = await fetchCandidatesWithScores(page, 10);
+      if (res?.data?.candidates) {
+        setCandidates(res.data.candidates);
+        setPagination({
+          currentPage: res.data.pagination?.currentPage ?? 1,
+          totalPages: res.data.pagination?.totalPages ?? 1,
+        });
+      }
+    } catch (err) {
+      console.error("Failed to fetch candidates", err);
+    }
+  };
+
+  const viewCandidateDetails = async (candidateId: string) => {
+    try {
+      const res: any = await fetchCandidateWithScoreById(candidateId);
+      const candidateData = res?.data?.candidates?.[0];
+      if (!candidateData) return;
+
+      // Normalize structure
+      setSelectedCandidate({
+        candidate: candidateData.candidate ?? {},
+        job: candidateData.job ?? {},
+        score: candidateData.score ?? {},
+      });
+      setActiveTab("details");
+    } catch (err) {
+      console.error("Failed to fetch candidate details", err);
+    }
+  };
 
   return (
     <div className="resume-dashboard">
-      {/* Left Filters */}
+      {/* Filters Panel */}
       <div className="filters">
         <h3>Filters</h3>
         <label>Date</label>
@@ -65,8 +70,7 @@ export default function ResumeScoringDashboard() {
         <label>Job</label>
         <select>
           <option>All Jobs</option>
-          <option>Software Engineer</option>
-          <option>Data Scientist</option>
+          {candidates.map(c => <option key={c.candidate.id}>{c.job?.title ?? "N/A"}</option>)}
         </select>
 
         <label>Score Range</label>
@@ -84,11 +88,10 @@ export default function ResumeScoringDashboard() {
         <button>Apply Filters</button>
       </div>
 
-      {/* Right Panel */}
+      {/* Results Panel */}
       <div className="results">
         <h2>Resume Scoring Results</h2>
 
-        {/* Candidate Table */}
         <table className="candidate-table">
           <thead>
             <tr>
@@ -102,26 +105,33 @@ export default function ResumeScoringDashboard() {
           </thead>
           <tbody>
             {candidates.map(c => (
-              <tr key={c.id}>
-                <td>{c.name}</td>
-                <td>{c.email}</td>
-                <td>{c.job}</td>
-                <td>{c.score}%</td>
+              <tr key={c.candidate.id}>
+                <td>{c.candidate?.name ?? "N/A"}</td>
+                <td>{c.candidate?.email ?? "N/A"}</td>
+                <td>{c.job?.title ?? "N/A"}</td>
+                <td>{c.score?.overall_score ?? 0}%</td>
                 <td>
-                  <button onClick={() => setSelectedCandidate(c)}>View</button>
+                  <button onClick={() => viewCandidateDetails(c.candidate.id)}>View</button>
                 </td>
                 <td>
-                  <input type="checkbox" onChange={(e) => {
-                    if(e.target.checked) setComparisonCandidates([...comparisonCandidates, c]);
-                    else setComparisonCandidates(comparisonCandidates.filter(cc => cc.id !== c.id));
-                  }} />
+                  <input
+                    type="checkbox"
+                    onChange={(e) => {
+                      if (e.target.checked)
+                        setComparisonCandidates([...comparisonCandidates, c]);
+                      else
+                        setComparisonCandidates(
+                          comparisonCandidates.filter(cc => cc.candidate.id !== c.candidate.id)
+                        );
+                    }}
+                  />
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
 
-        {/* Selected Candidate Tabs */}
+        {/* Selected Candidate Details */}
         {selectedCandidate && (
           <div className="candidate-details">
             <div className="tabs">
@@ -130,48 +140,66 @@ export default function ResumeScoringDashboard() {
               <button className={activeTab === "comparison" ? "active" : ""} onClick={() => setActiveTab("comparison")}>Comparison</button>
             </div>
 
-            {/* Details & Scoring */}
+            {/* Details Tab */}
             {activeTab === "details" && (
               <div className="details-tab">
-                <h3>{selectedCandidate.name}</h3>
-
+                <h3>{selectedCandidate.candidate?.name ?? "N/A"}</h3>
                 <div className="charts">
-                  <RadarChart outerRadius={90} width={300} height={300} data={scoreBreakdown}>
-                    <PolarGrid />
-                    <PolarAngleAxis dataKey="subject" />
-                    <PolarRadiusAxis />
-                    <Radar name="Score" dataKey="A" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
-                    <Tooltip />
-                  </RadarChart>
+                  {selectedCandidate.score?.scoring_breakdown ? (
+                    <>
+                      <RadarChart
+                        key={selectedCandidate.candidate.id}
+                        outerRadius={90}
+                        width={300}
+                        height={300}
+                        data={Object.entries(selectedCandidate.score.scoring_breakdown).map(([k, v]) => ({ subject: k, A: v }))}
+                      >
+                        <PolarGrid />
+                        <PolarAngleAxis dataKey="subject" />
+                        <PolarRadiusAxis />
+                        <Radar name="Score" dataKey="A" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
+                        <Tooltip />
+                      </RadarChart>
 
-                  <PieChart width={300} height={300}>
-                    <Pie data={pieData} dataKey="value" cx="50%" cy="50%" outerRadius={100} label>
-                      {pieData.map((entry, index) => <Cell key={index} fill={COLORS[index % COLORS.length]} />)}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
+                      <PieChart width={300} height={300}>
+                        <Pie
+                          key={selectedCandidate.candidate.id}
+                          data={Object.entries(selectedCandidate.score.scoring_breakdown).map(([k, v]) => ({ name: k, value: v }))}
+                          dataKey="value"
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={100}
+                          label
+                        >
+                          {Object.entries(selectedCandidate.score.scoring_breakdown).map((_, index) => (
+                            <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </>
+                  ) : <p>No scoring data available.</p>}
                 </div>
 
                 <div className="advanced-metrics">
-                  <h4>Advanced Metrics</h4>
                   <ul>
-                    <li>Sentiment: <b>{sentimentAnalysis}</b></li>
-                    <li>Grammar Score: <b>{grammarScore}%</b></li>
-                    <li>ATS Score: <b>{atsScore}%</b></li>
-                    <li>Skill Match Score: <b>{skillMatchScore}%</b></li>
-                    <li>Readability Score: <b>{readabilityScore}%</b></li>
+                    <li>Sentiment: <b>{selectedCandidate.score?.sentiment?.overall ?? "N/A"}</b></li>
+                    <li>Grammar Score: <b>{selectedCandidate.score?.scoring_breakdown?.grammar ?? 0}%</b></li>
+                    <li>ATS Score: <b>{selectedCandidate.score?.scoring_breakdown?.ats ?? 0}%</b></li>
+                    <li>Skill Match Score: <b>{selectedCandidate.score?.scoring_breakdown?.skills ?? 0}%</b></li>
+                    <li>Readability Score: <b>{selectedCandidate.score?.scoring_breakdown?.readability ?? 0}%</b></li>
                   </ul>
                 </div>
               </div>
             )}
 
-            {/* AI Chat */}
+            {/* Chat Tab */}
             {activeTab === "chat" && (
               <div className="chat-tab">
                 <h4>AI Resume Chat</h4>
                 <div className="chat-box">
                   <div className="messages">
-                    <p><b>AI:</b> Candidate shows strong backend skills, weak frontend.</p>
+                    <p><b>AI:</b> Candidate's profile summary and technical insights will appear here.</p>
                   </div>
                   <div className="chat-input">
                     <input placeholder="Ask something..." />
@@ -181,7 +209,7 @@ export default function ResumeScoringDashboard() {
               </div>
             )}
 
-            {/* Comparison */}
+            {/* Comparison Tab */}
             {activeTab === "comparison" && (
               <div className="comparison-tab">
                 <h4>Candidate Comparison</h4>
@@ -199,13 +227,13 @@ export default function ResumeScoringDashboard() {
                     </thead>
                     <tbody>
                       {comparisonCandidates.map(c => (
-                        <tr key={c.id}>
-                          <td>{c.name}</td>
-                          <td>{c.score}%</td>
-                          <td>--</td>
-                          <td>--</td>
-                          <td>--</td>
-                          <td>--</td>
+                        <tr key={c.candidate.id}>
+                          <td>{c.candidate?.name ?? "N/A"}</td>
+                          <td>{c.score?.overall_score ?? 0}%</td>
+                          <td>{c.candidate?.skills?.join(", ") ?? "N/A"}</td>
+                          <td>{c.candidate?.years_of_experience ?? "N/A"} yrs</td>
+                          <td>{c.candidate?.extra_data?.education?.map((e: any) => e.degree).join(", ") ?? "N/A"}</td>
+                          <td>{c.candidate?.extra_data?.projects?.map((p: any) => p.title).join(", ") ?? "N/A"}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -213,6 +241,7 @@ export default function ResumeScoringDashboard() {
                 ) : <p>Select 2 or more candidates to compare.</p>}
               </div>
             )}
+
           </div>
         )}
       </div>
