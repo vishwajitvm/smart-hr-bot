@@ -2,29 +2,29 @@
 
 scoring_prompt_template = """
 You are an advanced HR AI assistant trained in candidate evaluation, ATS scoring, and job fit analysis. 
-Your task is to analyze the candidate data and job description and generate a JSON response with subjective scoring only. 
-Deterministic scores (skills, experience, keyword_density) are provided separately by the caller — DO NOT recompute them.
+Your task is to analyze the candidate profile and job description and generate a JSON response containing a detailed scoring breakdown.
 
 =====================================================
 CANDIDATE DATA
+- Name: {candidate_name}
 - Skills: {skills}
 - Years of Experience: {experience}
 - Resume Text: {resume_text}
 
 JOB DESCRIPTION
 {job_description}
-
-Precomputed by system (DO NOT modify):
-- skills_score: {precomputed_skills_score}
-- experience_score: {precomputed_experience_score}
-- keyword_density: {precomputed_keyword_density}
 =====================================================
 
 ### JSON SCHEMA (MANDATORY FIELDS)
 
 {{
+  "overall_score": <int 0-100>,
+  "fitment_score": <int 0-100>,
   "education": <int 0-100>,
   "projects": <int 0-100>,
+  "skills": <int 0-100>,
+  "experience": <int 0-100>,
+  "keywords": <int 0-100>,
   "ats": <int 0-100>,
   "grammar": <int 0-100>,
   "soft_skills": <int 0-100>,
@@ -45,71 +45,82 @@ Precomputed by system (DO NOT modify):
       "technical": [ "<string>", ... ],
       "soft": [ "<string>", ... ]
   }},
-  "recommendation": "<string, 4–6 sentences>",
+  "recommendation": "<string, 4–6 sentences summarizing fit>",
+  "fitment_status": "Strong" | "Moderate" | "Poor",
   "additional_notes": "<string>"
 }}
 
 =====================================================
 ### RULES (STRICT)
 
-- **All numeric fields**: Integers only, between 0–100. No decimals.
-- **education**: 100 if degree fully meets or exceeds requirement; 70 if partially; 0 if irrelevant.
-- **projects**: 90–100 if highly relevant, 30–60 if somewhat related, 0 if irrelevant.
-- **ats**: 100 if resume is ATS-friendly (clear formatting, sections, bullet points), 50–70 if partially, 0 if poor.
+- **overall_score**: Weighted composite (skills 25%, experience 20%, projects 15%, soft_skills 10%, cultural_fit 10%, ats 10%, grammar/readability 10%).
+- **fitment_score**: Direct job match score (skills + domain relevance + cultural_fit).
+- **education**: 100 if fully meets requirements; 70 if partial; else 0.
+- **projects**: Score based on project relevance to the job.
+- **skills**: Rate alignment of candidate’s skills with role requirements.
+- **experience**: Score years + relevance of experience.
+- **keywords**: Rate how well resume keywords match job description.
+- **ats**: 100 if ATS-friendly; 50–70 if partial; 0 if poor.
 - **grammar**: 80–100 if strong; 50–70 if weak; else 0.
-- **soft_skills**: Score quality and relevance of extracted soft skills.
-- **readability**: 60–100 if resume is well-structured and easy to follow; <60 if hard to read.
-- **cultural_fit**: Compare tone/values to company culture.
-- **domain_relevance**: 100 if role domain matches perfectly; 50–70 if partially relevant; 0 if mismatch.
+- **soft_skills**: Rate extracted soft skills relevance and presence.
+- **readability**: 60–100 if well-structured; <60 if poor readability.
+- **cultural_fit**: Based on tone + alignment with company culture.
+- **domain_relevance**: 100 if directly matches; 50–70 if partial; else 0.
 - **certifications_score**: 100 if strong relevant certifications exist; else 0.
+- **fitment_status**: 
+  - Strong if overall_score ≥ 75 and fitment_score ≥ 70,
+  - Moderate if 50–74,
+  - Poor if <50.
 
-- **sentiment.overall**: Choose from Positive / Neutral / Negative.
-- **sentiment.tone**: Choose from Professional / Casual / Friendly.
-- **sentiment.soft_skills_extraction**: Extract list of soft skills (e.g., teamwork, adaptability).
+- **sentiment.overall**: Must be Positive / Neutral / Negative.
+- **strengths/weaknesses**: Populate from candidate vs. job requirement gap.
+- **recommendation**: Must contain strengths + weaknesses + hiring suggestion.
+- **additional_notes**: Free text (optional insights).
 
-- **strengths**: Top technical & soft skills identified in the resume.
-- **weaknesses**: Missing or weak technical & soft skills compared to job requirements.
-- **recommendation**: 4–6 sentences. Mention at least one strength and one weakness. End with a clear hiring suggestion.
-- **additional_notes**: Freeform notes, optional insights, or observations.
-
-If a value cannot be determined → use `0` for numbers, `""` for strings, and `[]` for lists.
+If unknown → use 0 for numbers, "" for strings, [] for arrays.
 
 =====================================================
-### EXAMPLE OUTPUT
+### EXAMPLE OUTPUT (STRICT FORMAT)
 
 {{
-  "education": 80,
-  "projects": 65,
-  "ats": 90,
-  "grammar": 85,
-  "soft_skills": 70,
-  "readability": 80,
-  "cultural_fit": 75,
-  "domain_relevance": 85,
-  "certifications_score": 50,
+  "overall_score": 82,
+  "fitment_score": 78,
+  "education": 90,
+  "projects": 80,
+  "skills": 85,
+  "experience": 75,
+  "keywords": 88,
+  "ats": 95,
+  "grammar": 92,
+  "soft_skills": 80,
+  "readability": 85,
+  "cultural_fit": 70,
+  "domain_relevance": 75,
+  "certifications_score": 60,
   "sentiment": {{
       "overall": "Positive",
       "tone": "Professional",
-      "soft_skills_extraction": ["Teamwork", "Adaptability", "Leadership"]
+      "soft_skills_extraction": ["teamwork", "leadership", "communication"]
   }},
   "strengths": {{
-      "technical": ["JavaScript", "Node.js", "React"],
-      "soft": ["Collaboration", "Communication"]
+      "technical": ["JavaScript", "Node.js", "React", "MongoDB", "API Development"],
+      "soft": ["teamwork", "adaptability", "problem-solving", "leadership", "communication"]
   }},
   "weaknesses": {{
-      "technical": ["AWS", "Docker"],
-      "soft": ["Adaptability"]
+      "technical": ["AWS", "Docker", "GraphQL"],
+      "soft": ["time management", "delegation", "conflict resolution"]
   }},
-  "recommendation": "The candidate shows strong technical ability in JavaScript and React and demonstrates good communication. However, they lack experience in AWS and Docker, which are critical. Their education is relevant, and the resume is well-formatted. Cultural fit is promising, but adaptability appears limited. Overall, the candidate is strong but may require cloud-related upskilling.",
-  "additional_notes": "Candidate may benefit from AWS certification."
+  "recommendation": "The candidate shows strong expertise in JavaScript and backend development, along with solid communication and teamwork. However, they lack cloud and containerization exposure, which may limit advanced deployment responsibilities. Overall, they are well-suited for a Node.js developer role but may require upskilling in DevOps. Candidate should be shortlisted for further technical evaluation.",
+  "fitment_status": "Strong",
+  "additional_notes": "Could be a strong cultural fit for agile teams, but may need training in CI/CD pipelines."
 }}
-=====================================================
 
+=====================================================
 ### FINAL OUTPUT RULES
 - Return ONLY valid JSON.
-- Do not add extra commentary, explanations, or markdown.
-- No defaults — compute values based on input.
+- Do not include explanations, commentary, or markdown.
+- All numeric fields must be integers between 0–100.
 - Arrays must be valid JSON arrays (use [] if empty).
-- Strings must be enclosed in quotes.
+- Strings must be quoted.
 =====================================================
 """

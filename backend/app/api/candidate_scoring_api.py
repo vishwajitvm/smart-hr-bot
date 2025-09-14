@@ -131,7 +131,8 @@ async def generate_candidate_score_api(request: Request, payload: dict = Body(..
         doc = candidate_score.model_dump()
         doc["updated_at"] = now
         set_doc = doc.copy()
-        created_on_insert = {"created_at": doc.get("created_at", now)}
+        # created_on_insert = {"created_at": doc.get("created_at", now)}
+        created_on_insert = {"created_at": candidate_score.created_at}
         set_doc.pop("created_at", None)
 
         db["candidate_scores"].update_one(
