@@ -13,28 +13,26 @@ from app.services.llm import llm_service, LLMServiceError
 logger = logging.getLogger("scoring_chain")
 logger.setLevel(logging.INFO)
 
-
 # ------------------------------
 # Deterministic helpers
 # ------------------------------
-
 def calculate_skill_score(candidate_skills: List[str], required_skills: List[str]) -> int:
     try:
         matched = len(set(map(str.lower, candidate_skills)) & set(map(str.lower, required_skills)))
         total = len(required_skills)
         return int((matched / total) * 100) if total > 0 else 0
-    except Exception:
+    except Exception as e:
+        logger.exception(f"[calculate_skill_score] Error: {e}")
         return 0
-
 
 def calculate_experience_score(years_of_experience: int, max_years: int = 5) -> int:
     try:
         years = int(years_of_experience)
-    except Exception:
-        years = 0
-    score = int(min(100, (years / max_years) * 100))
-    return max(0, score)
-
+        score = int(min(100, (years / max_years) * 100))
+        return max(0, score)
+    except Exception as e:
+        logger.exception(f"[calculate_experience_score] Error: {e}")
+        return 0
 
 def calculate_keyword_density(resume_text: str, job_keywords: List[str]) -> Dict[str, int]:
     try:
@@ -45,31 +43,21 @@ def calculate_keyword_density(resume_text: str, job_keywords: List[str]) -> Dict
         required = len(job_keywords)
         percentage = int((matched / required) * 100) if required > 0 else 0
         return {"required_keywords": required, "matched": matched, "percentage": percentage}
-    except Exception:
+    except Exception as e:
+        logger.exception(f"[calculate_keyword_density] Error: {e}")
         return {"required_keywords": 0, "matched": 0, "percentage": 0}
-
-
-# Backwards compatibility helper
-def extract_first_json_object(text: str) -> dict:
-    return llm_service.sanitize_json(text)
-
 
 # ------------------------------
 # LLM-assisted extraction
 # ------------------------------
-
 async def extract_dynamic_scores(candidate_data: Dict, job_data: Dict, resume_text: str) -> Dict:
-    """
-    Ask LLM for subjective pieces. Returns dict with keys:
-    education, projects, ats, grammar, soft_skills, readability, cultural_fit, domain_relevance,
-    certifications_score, sentiment, strengths, weaknesses, recommendation, additional_notes
-    """
-    # Precompute deterministic values to pass into prompt
     precomputed_skills_score = calculate_skill_score(candidate_data.get("skills", []), job_data.get("skills", []) if job_data else [])
     precomputed_experience_score = calculate_experience_score(candidate_data.get("years_of_experience", 0))
     precomputed_keyword_density = calculate_keyword_density(resume_text, job_data.get("keywords", []) if job_data else [])
 
-    # Pass actual years of experience, not precomputed percentage
+    if not resume_text:
+        logger.warning(f"[extract_dynamic_scores] Warning: Resume text is empty for candidate {candidate_data.get('name')}")
+
     prompt = scoring_prompt_template.format(
         skills=", ".join(candidate_data.get("skills", []) or []),
         experience=str(candidate_data.get("years_of_experience", 0)),
@@ -80,14 +68,26 @@ async def extract_dynamic_scores(candidate_data: Dict, job_data: Dict, resume_te
         precomputed_keyword_density=json.dumps(precomputed_keyword_density)
     )
 
+    # Log prompt
+    logger.info("===== LLM Scoring Prompt =====")
+    logger.info(f"Candidate: {candidate_data.get('name')}")
+    logger.info(f"Job: {job_data.get('title') if job_data else 'N/A'}")
+    logger.info(f"Prompt (truncated): {prompt[:2000]}")
+    logger.info("===== END PROMPT =====")
+
     try:
         raw = await llm_service.generate_response(prompt)
-        logger.debug(f"[scoring_chain] LLM raw (truncated): {raw[:300]}")
 
-        # Parse JSON from LLM response
+        logger.info("===== LLM Raw Response =====")
+        logger.info(raw[:2000])
+        logger.info("===== END LLM Raw Response =====")
+
         data = llm_service.sanitize_json(raw)
 
-        # Ensure numeric fields are integers between 0 and 100; fallback 0
+        logger.info("===== Parsed LLM Data =====")
+        logger.info(json.dumps(data, indent=2))
+        logger.info("===== END Parsed Data =====")
+
         numeric_keys = [
             "education", "projects", "ats", "grammar", "soft_skills",
             "readability", "cultural_fit", "domain_relevance", "certifications_score"
@@ -100,7 +100,6 @@ async def extract_dynamic_scores(candidate_data: Dict, job_data: Dict, resume_te
             except Exception:
                 data[k] = 0
 
-        # Ensure nested/defaults
         data.setdefault("sentiment", {"overall": "Neutral", "tone": "Professional", "soft_skills_extraction": []})
         data.setdefault("strengths", {"technical": [], "soft": []})
         data.setdefault("weaknesses", {"technical": [], "soft": []})
@@ -109,37 +108,26 @@ async def extract_dynamic_scores(candidate_data: Dict, job_data: Dict, resume_te
 
         return data
 
-    except LLMServiceError as e:
-        logger.warning(f"[scoring_chain] LLMService failed: {e}")
-        return {}
     except Exception as e:
-        logger.exception(f"[scoring_chain] Unexpected error extracting dynamic scores: {e}")
+        logger.exception(f"[extract_dynamic_scores] Error extracting dynamic scores: {e}")
         return {}
-
 
 # ------------------------------
 # Main orchestration
 # ------------------------------
-
 async def generate_candidate_score(candidate_data: Dict, job_data: Optional[Dict] = None, resume_text: str = "") -> CandidateScore:
-    """
-    Returns CandidateScore (pydantic) combining deterministic and LLM-subjective parts.
-    """
     request_id = str(uuid.uuid4())[:8]
     candidate_name = candidate_data.get("name") or candidate_data.get("candidate_name") or candidate_data.get("id")
     logger.info(f"[{request_id}] Starting scoring for candidate={candidate_name}")
 
-    # Deterministic
     skills = candidate_data.get("skills", []) or []
     required_skills = job_data.get("skills", []) if job_data else []
     skills_score = calculate_skill_score(skills, required_skills)
     experience_score = calculate_experience_score(candidate_data.get("years_of_experience", 0))
     keyword_density = calculate_keyword_density(resume_text, job_data.get("keywords", []) if job_data else [])
 
-    # LLM dynamic (may return {} on failure)
     dynamic = await extract_dynamic_scores(candidate_data, job_data or {}, resume_text)
 
-    # Compose ScoringBreakdown
     scoring_breakdown = ScoringBreakdown(
         skills=skills_score,
         experience=experience_score,
@@ -155,7 +143,6 @@ async def generate_candidate_score(candidate_data: Dict, job_data: Optional[Dict
         certifications_score=dynamic.get("certifications_score", 0)
     )
 
-    # Compute overall_score: hybrid weighting
     deterministic_component = int(round((scoring_breakdown.skills * 0.6) + (scoring_breakdown.experience * 0.3) + (scoring_breakdown.keywords * 0.1)))
     subjective_components = [
         scoring_breakdown.education,
@@ -173,7 +160,6 @@ async def generate_candidate_score(candidate_data: Dict, job_data: Optional[Dict
     overall_score = max(0, min(100, overall_score))
     fitment_score = int(round((overall_score + scoring_breakdown.skills) / 2))
 
-    # Fitment status
     if overall_score > 70:
         fitment_status = "Good Fit"
     elif 50 <= overall_score <= 70:
@@ -181,7 +167,6 @@ async def generate_candidate_score(candidate_data: Dict, job_data: Optional[Dict
     else:
         fitment_status = "Poor"
 
-    # JobMatch
     skills_matched = list(set(map(str.lower, skills)) & set(map(str.lower, required_skills))) if required_skills else []
     skills_missing = list(set(map(str.lower, required_skills)) - set(map(str.lower, skills))) if required_skills else []
 
@@ -195,7 +180,6 @@ async def generate_candidate_score(candidate_data: Dict, job_data: Optional[Dict
         }
     ) if required_skills else None
 
-    # Sentiment
     sentiment_payload = dynamic.get("sentiment", {"overall": "Neutral", "tone": "Professional", "soft_skills_extraction": []})
     sentiment = SentimentAnalysis(
         overall=sentiment_payload.get("overall", "Neutral"),
@@ -203,7 +187,6 @@ async def generate_candidate_score(candidate_data: Dict, job_data: Optional[Dict
         soft_skills_extraction=sentiment_payload.get("soft_skills_extraction", [])
     )
 
-    # Strengths & weaknesses
     strengths = {
         "technical": dynamic.get("strengths", {}).get("technical") or skills_matched[:5],
         "soft": dynamic.get("strengths", {}).get("soft") or sentiment.soft_skills_extraction[:5]
@@ -214,7 +197,6 @@ async def generate_candidate_score(candidate_data: Dict, job_data: Optional[Dict
     }
 
     now = datetime.utcnow()
-
     candidate_score = CandidateScore(
         candidate_id=str(candidate_data.get("id") or candidate_data.get("_id") or ""),
         job_id=str(job_data.get("id")) if job_data and job_data.get("id") else None,
@@ -229,7 +211,7 @@ async def generate_candidate_score(candidate_data: Dict, job_data: Optional[Dict
         fitment_status=fitment_status,
         ranking_score=None,
         percentile=None,
-        scoring_version="v1.2",
+        scoring_version="v1.3",
         deleted=False,
         deleted_at=None,
         created_at=now,
@@ -238,3 +220,4 @@ async def generate_candidate_score(candidate_data: Dict, job_data: Optional[Dict
 
     logger.info(f"[{request_id}] Completed scoring: overall={overall_score}, fitment_status={fitment_status}")
     return candidate_score
+

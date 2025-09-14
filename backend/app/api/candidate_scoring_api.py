@@ -5,27 +5,17 @@ from logging.handlers import RotatingFileHandler
 from fastapi import APIRouter, HTTPException, Body, Request
 from bson import ObjectId
 from datetime import datetime
-import gridfs
-import tempfile
-import os
-
-from app.core.db import (
-    candidates_collection,
-    jobs_collection,
-    db,
-    candidate_scores_collection,
-)
+from app.core.db import db
 from app.models.scoring import CandidateScore
 from app.models.candidate import CandidateResponse
 from app.models.job import JobResponse
-from app.chains.scoring_chain import generate_candidate_score, calculate_keyword_density
+from app.chains.scoring_chain import generate_candidate_score
 
 router = APIRouter(prefix="/candidate-scoring", tags=["Candidate Scoring"])
 
-# GridFS setup
-fs = gridfs.GridFS(db)
-
-# Logging
+# -----------------------------
+# Logging setup
+# -----------------------------
 logger = logging.getLogger("candidate_scoring_api")
 logger.setLevel(logging.INFO)
 handler = RotatingFileHandler(
@@ -45,107 +35,81 @@ def _safe_log_info(msg: str, candidate_id: str = "-", job_id: str = "-"):
     logger.info(msg, extra={"candidate_id": candidate_id, "job_id": job_id})
 
 
+def _safe_log_warning(msg: str, candidate_id: str = "-", job_id: str = "-"):
+    logger.warning(msg, extra={"candidate_id": candidate_id, "job_id": job_id})
+
+
+def _safe_log_error(msg: str, candidate_id: str = "-", job_id: str = "-"):
+    logger.error(msg, extra={"candidate_id": candidate_id, "job_id": job_id})
+
+
+# -----------------------------
+# API: Generate Candidate Score
+# -----------------------------
 @router.post("/generate-score")
 async def generate_candidate_score_api(request: Request, payload: dict = Body(...)):
     client_host = request.client.host if request.client else "unknown"
     _candidate_id_for_log = "-"
     _job_id_for_log = "-"
+
     try:
         candidate_id = payload.get("candidate_id")
         if not candidate_id:
-            logger.warning("candidate_id not provided in request")
+            _safe_log_warning("candidate_id not provided in payload")
             raise HTTPException(status_code=400, detail="candidate_id is required")
 
-        # Query candidate (support ObjectId or custom id)
+        # Fetch candidate
         query = {"_id": ObjectId(candidate_id)} if ObjectId.is_valid(candidate_id) else {"id": candidate_id}
-        candidate = candidates_collection.find_one({**query, "deleted": False})
+        candidate = db["candidates"].find_one({**query, "deleted": False})
         if not candidate:
-            logger.warning(f"Candidate not found: {candidate_id}")
+            _safe_log_warning(f"Candidate not found in DB - candidate_id={candidate_id}")
             raise HTTPException(status_code=404, detail="Candidate not found")
 
-        # normalize id
-        candidate["id"] = str(candidate.get("_id") or candidate.get("id"))
+        candidate["id"] = str(candidate["_id"])
         candidate.pop("_id", None)
-
         _candidate_id_for_log = candidate["id"]
         _safe_log_info(f"Fetched candidate from DB - name={candidate.get('name')}", candidate_id=_candidate_id_for_log)
 
-        # Fetch job if present
+        # Fetch job using job_id from candidate
         job = None
         if candidate.get("job_id"):
             job_query = {"_id": ObjectId(candidate["job_id"])} if ObjectId.is_valid(str(candidate["job_id"])) else {"id": candidate["job_id"]}
-            job = jobs_collection.find_one(job_query)
+            job = db["jobs"].find_one(job_query)
             if job:
-                job["id"] = str(job.get("_id") or job.get("id"))
+                job["id"] = str(job["_id"])
                 job.pop("_id", None)
                 _job_id_for_log = job["id"]
                 _safe_log_info(f"Fetched related job - title={job.get('title')}", candidate_id=_candidate_id_for_log, job_id=_job_id_for_log)
             else:
-                logger.warning(f"Job not found for candidate {candidate['id']} - Job ID: {candidate.get('job_id')}", extra={"candidate_id": _candidate_id_for_log})
+                _safe_log_warning(f"Job not found for candidate - job_id={candidate.get('job_id')}", candidate_id=_candidate_id_for_log)
 
-        # Fetch resume from GridFS and parse text
-        resume_text = ""
-        resume_data = None
-        if candidate.get("resume_id"):
-            try:
-                resume_file = fs.get(ObjectId(candidate["resume_id"]))
-                resume_bytes = resume_file.read()
-                # Try as UTF-8 text first
-                try:
-                    resume_text = resume_bytes.decode("utf-8")
-                except Exception:
-                    # save to temp file and try pdf/docx extraction if libs present
-                    tmp = tempfile.NamedTemporaryFile(delete=False)
-                    tmp.write(resume_bytes)
-                    tmp.close()
-                    tmp_path = tmp.name
-                    parsed = ""
-                    try:
-                        from pathlib import Path
-                        suffix = Path(resume_file.filename or "").suffix.lower()
-                        if suffix == ".pdf":
-                            try:
-                                import pdfplumber
-                                with pdfplumber.open(tmp_path) as pdf:
-                                    pages_text = [p.extract_text() or "" for p in pdf.pages]
-                                    parsed = "\n".join(pages_text)
-                            except Exception:
-                                parsed = ""
-                        elif suffix in [".doc", ".docx"]:
-                            try:
-                                import docx
-                                doc = docx.Document(tmp_path)
-                                parsed = "\n".join([p.text for p in doc.paragraphs])
-                            except Exception:
-                                parsed = ""
-                    except Exception:
-                        parsed = ""
-                    resume_text = parsed or ""
-                    try:
-                        os.unlink(tmp_path)
-                    except Exception:
-                        pass
+        # Build resume_text dynamically
+        resume_parts = []
+        resume_parts.append(f"Candidate Name: {candidate.get('name', '')}")
+        resume_parts.append(f"Email: {candidate.get('email', '')}")
+        resume_parts.append(f"Phone: {candidate.get('phone', '')}")
+        resume_parts.append(f"Location: {candidate.get('location', '')}")
+        resume_parts.append(f"Years of Experience: {candidate.get('years_of_experience', '')}")
+        resume_parts.append(f"Skills: {', '.join(candidate.get('skills', []))}")
+        if job:
+            resume_parts.append(f"Applying for Job: {job.get('title', '')}")
+            resume_parts.append(f"Job Description: {job.get('description', '')}")
+            resume_parts.append(f"Required Skills: {', '.join(job.get('skills', []))}")
+        resume_text = "\n".join([p for p in resume_parts if p])
 
-                resume_data = {
-                    "resume_id": str(candidate["resume_id"]),
-                    "filename": getattr(resume_file, "filename", "unknown"),
-                    "content_type": getattr(resume_file, "content_type", "unknown")
-                }
-                _safe_log_info("Fetched resume for candidate", candidate_id=_candidate_id_for_log)
-            except gridfs.errors.NoFile:
-                logger.warning(f"Resume not found for candidate {candidate['id']} - Resume ID: {candidate.get('resume_id')}", extra={"candidate_id": _candidate_id_for_log})
-
-        # Candidate/Job response objects optional conversion
+        # Candidate/Job objects
         try:
             candidate_obj = CandidateResponse(**candidate)
-        except Exception:
+        except Exception as e:
+            _safe_log_error(f"Error creating CandidateResponse object: {e}", candidate_id=_candidate_id_for_log)
             candidate_obj = None
 
         job_obj = None
         if job:
             try:
                 job_obj = JobResponse(**job)
-            except Exception:
+            except Exception as e:
+                _safe_log_error(f"Error creating JobResponse object: {e}", candidate_id=_candidate_id_for_log, job_id=_job_id_for_log)
                 job_obj = None
 
         # Generate score
@@ -154,46 +118,42 @@ async def generate_candidate_score_api(request: Request, payload: dict = Body(..
             candidate_score: CandidateScore = await generate_candidate_score(
                 candidate_data=(candidate_obj.model_dump() if candidate_obj else candidate),
                 job_data=(job_obj.model_dump() if job_obj else (job or {})),
-                resume_text=resume_text or ""
+                resume_text=resume_text
             )
             _safe_log_info(f"Generated score - overall={candidate_score.overall_score}", candidate_id=_candidate_id_for_log, job_id=_job_id_for_log)
         except Exception as e:
-            logger.exception("Error generating candidate score via chain", exc_info=True)
-            # Surface a concise message to client, but preserve error in logs
+            _safe_log_error(f"Error generating candidate score: {e}", candidate_id=_candidate_id_for_log, job_id=_job_id_for_log)
             raise HTTPException(status_code=500, detail=f"Error generating candidate score: {str(e)}")
 
-        # Upsert candidate_score into DB and preserve created_at
+        # Upsert candidate_score in DB
         query = {"candidate_id": candidate_score.candidate_id, "job_id": candidate_score.job_id}
         now = datetime.utcnow()
-        doc = candidate_score.model_dump()  # pydantic v2 method
-        # Ensure datetime objects are real datetimes if pydantic returned them as such
+        doc = candidate_score.model_dump()
         doc["updated_at"] = now
-
         set_doc = doc.copy()
         created_on_insert = {"created_at": doc.get("created_at", now)}
         set_doc.pop("created_at", None)
 
-        candidate_scores_collection.update_one(
+        db["candidate_scores"].update_one(
             query,
-            {
-                "$set": set_doc,
-                "$setOnInsert": created_on_insert
-            },
+            {"$set": set_doc, "$setOnInsert": created_on_insert},
             upsert=True
         )
-
         _safe_log_info("Stored/updated candidate score in DB", candidate_id=_candidate_id_for_log, job_id=_job_id_for_log)
 
         return {
-            "status": "success",
-            "candidate": candidate,
-            "job": job,
-            "resume": resume_data,
-            "score": candidate_score.model_dump()
+            "candidates": [
+                {
+                    "candidate": CandidateResponse(**candidate).dict(),
+                    "job": JobResponse(**job).dict() if job else None,
+                    "resume_text": resume_text,
+                    "score": candidate_score.model_dump()
+                }
+            ]
         }
 
     except HTTPException:
         raise
     except Exception as e:
-        logger.exception(f"Unhandled error while generating score: {e}", exc_info=True)
+        _safe_log_error(f"Unhandled error while generating score: {e}", candidate_id=_candidate_id_for_log, job_id=_job_id_for_log)
         raise HTTPException(status_code=500, detail=f"Unhandled error: {str(e)}")
