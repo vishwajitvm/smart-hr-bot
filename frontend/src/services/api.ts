@@ -148,4 +148,16 @@ export const generateCandidateScore = async (
   });
 };
 
+/* -------------------------------------------------------------------------- */
+/*                   Candidate Listing With Score APIs                        */
+/* -------------------------------------------------------------------------- */
+export const fetchCandidatesWithScores = (page = 1, limit = 10) =>
+  api.post("/candidates-listing-with-score/list", { page, limit });
+
+export const fetchCandidateWithScoreById = (candidateId: string) =>
+  api.post("/candidates-listing-with-score/get-candidate-by-id", {
+    candidate_id: candidateId,
+  });
+
+
 export default api;

@@ -1,0 +1,30 @@
+Async vs Sync API mismatch
+
+You’re using async def but Gemini SDK calls (generate_content) are synchronous.
+
+In FastAPI, this blocks the event loop.
+✅ Fix: Run Gemini calls in a threadpool (asyncio.to_thread) to keep your API scalable.
+
+Retry & Timeout Handling
+
+If Gemini has a transient error or slow response, your API will just fail/timeout.
+✅ Fix: Add retries (with exponential backoff) and explicit timeouts.
+
+Unified Response Extraction
+
+Repeatedly accessing response.candidates[0].content.parts[0].text → brittle if Gemini changes schema.
+✅ Fix: Create a helper _extract_text(response).
+
+Centralized JSON Sanitization
+
+Job AI JSON cleaning is good but scattered.
+✅ Fix: Move JSON cleaning/parsing into a utility function.
+
+Custom Exceptions Instead of HTTPException in Service Layer
+
+Right now, your service layer throws HTTPException.
+✅ Better: Raise a ValueError or LLMServiceError inside service, and let FastAPI routes translate to HTTP. Keeps service reusable outside FastAPI.
+
+Structured Logging
+
+Logs are good, but you can log request_id or uuid per call for tracing.

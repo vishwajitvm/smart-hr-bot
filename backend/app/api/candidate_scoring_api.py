@@ -1,17 +1,11 @@
-# backend/app/api/candidate_scoring_api.py
+# app/api/candidate_scoring_api.py
+
 import logging
 from logging.handlers import RotatingFileHandler
 from fastapi import APIRouter, HTTPException, Body, Request
 from bson import ObjectId
 from datetime import datetime
-import gridfs
-
-from app.core.db import (
-    candidates_collection,
-    jobs_collection,
-    db,
-    candidate_scores_collection,
-)
+from app.core.db import db
 from app.models.scoring import CandidateScore
 from app.models.candidate import CandidateResponse
 from app.models.job import JobResponse
@@ -19,10 +13,9 @@ from app.chains.scoring_chain import generate_candidate_score
 
 router = APIRouter(prefix="/candidate-scoring", tags=["Candidate Scoring"])
 
-# GridFS setup for resumes
-fs = gridfs.GridFS(db)
-
+# -----------------------------
 # Logging setup
+# -----------------------------
 logger = logging.getLogger("candidate_scoring_api")
 logger.setLevel(logging.INFO)
 handler = RotatingFileHandler(
@@ -32,123 +25,136 @@ handler = RotatingFileHandler(
     encoding="utf-8"
 )
 formatter = logging.Formatter(
-    "%(asctime)s - %(levelname)s - %(name)s - %(message)s"
+    "%(asctime)s - %(levelname)s - %(name)s - candidate_id=%(candidate_id)s - job_id=%(job_id)s - %(message)s"
 )
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 
+def _safe_log_info(msg: str, candidate_id: str = "-", job_id: str = "-"):
+    logger.info(msg, extra={"candidate_id": candidate_id, "job_id": job_id})
+
+
+def _safe_log_warning(msg: str, candidate_id: str = "-", job_id: str = "-"):
+    logger.warning(msg, extra={"candidate_id": candidate_id, "job_id": job_id})
+
+
+def _safe_log_error(msg: str, candidate_id: str = "-", job_id: str = "-"):
+    logger.error(msg, extra={"candidate_id": candidate_id, "job_id": job_id})
+
+
+# -----------------------------
+# API: Generate Candidate Score
+# -----------------------------
 @router.post("/generate-score")
 async def generate_candidate_score_api(request: Request, payload: dict = Body(...)):
-    """
-    Generate dynamic candidate score and store in DB.
-
-    Request Body (JSON):
-    {
-        "candidate_id": "abc123"
-    }
-
-    Steps performed:
-    1. Fetch candidate by ID (from candidates_collection).
-    2. Fetch related job if candidate has a job_id.
-    3. Fetch resume from GridFS if candidate has resume_id.
-    4. Generate dynamic score using Gemini LLM.
-    5. Store/update score in candidate_scores_collection.
-
-    Returns:
-    {
-        "status": "success",
-        "candidate": { ...candidate fields... },
-        "job": { ...job fields... } | None,
-        "resume": { "resume_id": "...", "filename": "...", "content_type": "..." } | None,
-        "score": { ...scoring fields... }
-    }
-    """
-    logger.info(f"Generate score request from {request.client.host} - Payload: {payload}")
+    client_host = request.client.host if request.client else "unknown"
+    _candidate_id_for_log = "-"
+    _job_id_for_log = "-"
 
     try:
         candidate_id = payload.get("candidate_id")
         if not candidate_id:
-            logger.warning("candidate_id not provided in request")
+            _safe_log_warning("candidate_id not provided in payload")
             raise HTTPException(status_code=400, detail="candidate_id is required")
 
-        # Candidate query
+        # Fetch candidate
         query = {"_id": ObjectId(candidate_id)} if ObjectId.is_valid(candidate_id) else {"id": candidate_id}
-        candidate = candidates_collection.find_one({**query, "deleted": False})
+        candidate = db["candidates"].find_one({**query, "deleted": False})
         if not candidate:
-            logger.warning(f"Candidate not found: {candidate_id}")
+            _safe_log_warning(f"Candidate not found in DB - candidate_id={candidate_id}")
             raise HTTPException(status_code=404, detail="Candidate not found")
 
         candidate["id"] = str(candidate["_id"])
         candidate.pop("_id", None)
-        logger.info(f"Fetched candidate: {candidate['id']} - {candidate.get('name')}")
+        _candidate_id_for_log = candidate["id"]
+        _safe_log_info(f"Fetched candidate from DB - name={candidate.get('name')}", candidate_id=_candidate_id_for_log)
 
-        # Related job
+        # Fetch job using job_id from candidate
         job = None
         if candidate.get("job_id"):
             job_query = {"_id": ObjectId(candidate["job_id"])} if ObjectId.is_valid(str(candidate["job_id"])) else {"id": candidate["job_id"]}
-            job = jobs_collection.find_one(job_query)
+            job = db["jobs"].find_one(job_query)
             if job:
                 job["id"] = str(job["_id"])
                 job.pop("_id", None)
-                logger.info(f"Fetched related job: {job['id']} - {job.get('title')}")
+                _job_id_for_log = job["id"]
+                _safe_log_info(f"Fetched related job - title={job.get('title')}", candidate_id=_candidate_id_for_log, job_id=_job_id_for_log)
             else:
-                logger.warning(f"Job not found for candidate {candidate['id']} - Job ID: {candidate.get('job_id')}")
+                _safe_log_warning(f"Job not found for candidate - job_id={candidate.get('job_id')}", candidate_id=_candidate_id_for_log)
 
-        # Related resume (fetch from GridFS)
-        resume_text = ""
-        resume_data = None
-        if candidate.get("resume_id"):
+        # Build resume_text dynamically
+        resume_parts = []
+        resume_parts.append(f"Candidate Name: {candidate.get('name', '')}")
+        resume_parts.append(f"Email: {candidate.get('email', '')}")
+        resume_parts.append(f"Phone: {candidate.get('phone', '')}")
+        resume_parts.append(f"Location: {candidate.get('location', '')}")
+        resume_parts.append(f"Years of Experience: {candidate.get('years_of_experience', '')}")
+        resume_parts.append(f"Skills: {', '.join(candidate.get('skills', []))}")
+        if job:
+            resume_parts.append(f"Applying for Job: {job.get('title', '')}")
+            resume_parts.append(f"Job Description: {job.get('description', '')}")
+            resume_parts.append(f"Required Skills: {', '.join(job.get('skills', []))}")
+        resume_text = "\n".join([p for p in resume_parts if p])
+
+        # Candidate/Job objects
+        try:
+            candidate_obj = CandidateResponse(**candidate)
+        except Exception as e:
+            _safe_log_error(f"Error creating CandidateResponse object: {e}", candidate_id=_candidate_id_for_log)
+            candidate_obj = None
+
+        job_obj = None
+        if job:
             try:
-                resume_file = fs.get(ObjectId(candidate["resume_id"]))
-                resume_bytes = resume_file.read()
-                try:
-                    resume_text = resume_bytes.decode("utf-8")
-                except UnicodeDecodeError:
-                    resume_text = ""  # fallback if binary cannot be decoded
-                resume_data = {
-                    "resume_id": str(candidate["resume_id"]),
-                    "filename": resume_file.filename,
-                    "content_type": resume_file.content_type
-                }
-                logger.info(f"Fetched resume {candidate['resume_id']} for candidate {candidate['id']}")
-            except gridfs.errors.NoFile:
-                logger.warning(f"Resume not found for candidate {candidate['id']} - Resume ID: {candidate.get('resume_id')}")
+                job_obj = JobResponse(**job)
+            except Exception as e:
+                _safe_log_error(f"Error creating JobResponse object: {e}", candidate_id=_candidate_id_for_log, job_id=_job_id_for_log)
+                job_obj = None
 
-        # Prepare candidate and job objects for scoring
-        candidate_obj = CandidateResponse(**candidate)
-        job_obj = JobResponse(**job) if job else None
+        # Generate score
+        _safe_log_info(f"Generating dynamic score (client={client_host})", candidate_id=_candidate_id_for_log, job_id=_job_id_for_log)
+        try:
+            candidate_score: CandidateScore = await generate_candidate_score(
+                candidate_data=(candidate_obj.model_dump() if candidate_obj else candidate),
+                job_data=(job_obj.model_dump() if job_obj else (job or {})),
+                resume_text=resume_text
+            )
+            _safe_log_info(f"Generated score - overall={candidate_score.overall_score}", candidate_id=_candidate_id_for_log, job_id=_job_id_for_log)
+        except Exception as e:
+            _safe_log_error(f"Error generating candidate score: {e}", candidate_id=_candidate_id_for_log, job_id=_job_id_for_log)
+            raise HTTPException(status_code=500, detail=f"Error generating candidate score: {str(e)}")
 
-        # Generate dynamic score using Gemini LLM
-        logger.info(f"Generating dynamic score for candidate {candidate_obj.id}")
-        # candidate_score: CandidateScore = await generate_candidate_score(
-        #     candidate=candidate_obj.dict(),
-        #     job=job_obj.dict() if job_obj else None,
-        #     resume_text=resume_text
-        # )
-        candidate_score: CandidateScore = await generate_candidate_score(
-            candidate_data=candidate_obj.dict(),
-            job_data=job_obj.dict() if job_obj else None,
-            resume_text=resume_text
-        )
-        logger.info(f"Generated score for candidate {candidate_obj.id} - Overall Score: {candidate_score.overall_score}")
+        # Upsert candidate_score in DB
+        query = {"candidate_id": candidate_score.candidate_id, "job_id": candidate_score.job_id}
+        now = datetime.utcnow()
+        doc = candidate_score.model_dump()
+        doc["updated_at"] = now
+        set_doc = doc.copy()
+        # created_on_insert = {"created_at": doc.get("created_at", now)}
+        created_on_insert = {"created_at": candidate_score.created_at}
+        set_doc.pop("created_at", None)
 
-        # Store in candidate_scores collection
-        candidate_scores_collection.update_one(
-            {"candidate_id": candidate_score.candidate_id, "job_id": candidate_score.job_id},
-            {"$set": candidate_score.dict()},
+        db["candidate_scores"].update_one(
+            query,
+            {"$set": set_doc, "$setOnInsert": created_on_insert},
             upsert=True
         )
-        logger.info(f"Stored candidate score in DB for candidate {candidate_obj.id}")
+        _safe_log_info("Stored/updated candidate score in DB", candidate_id=_candidate_id_for_log, job_id=_job_id_for_log)
 
         return {
-            "status": "success",
-            "candidate": candidate_obj.dict(),
-            "job": job_obj.dict() if job_obj else None,
-            "resume": resume_data,
-            "score": candidate_score.dict()
+            "candidates": [
+                {
+                    "candidate": CandidateResponse(**candidate).dict(),
+                    "job": JobResponse(**job).dict() if job else None,
+                    "resume_text": resume_text,
+                    "score": candidate_score.model_dump()
+                }
+            ]
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Error generating score: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Error generating candidate score: {str(e)}")
+        _safe_log_error(f"Unhandled error while generating score: {e}", candidate_id=_candidate_id_for_log, job_id=_job_id_for_log)
+        raise HTTPException(status_code=500, detail=f"Unhandled error: {str(e)}")

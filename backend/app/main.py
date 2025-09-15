@@ -47,7 +47,7 @@ app.include_router(llm.router, prefix="/api/llm", tags=["LLM"])
 app.include_router(candidates.router, prefix="/api/candidates", tags=["Candidates"])
 app.include_router(ai_jobs.router, prefix="/api", tags=["AI Jobs"])
 app.include_router(jobs.router, prefix="/api", tags=["Jobs"])
-app.include_router(candidate_listing.router, prefix="/api", tags=["Candidate Listing"])
+app.include_router(candidate_listing.router, prefix="/api", tags=["Candidate Listing with scoring"])
 app.include_router(candidate_scoring_api.router, prefix="/api", tags=["Candidate Scoring"])
 
 @app.get("/")

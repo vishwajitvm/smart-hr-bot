@@ -1,132 +1,116 @@
-# backend/app/chains/scoring_chain.py
-from datetime import datetime
-from typing import Dict, List
+# app/chains/scoring_chain.py
+
 import json
-import re
 import logging
+import uuid
+from typing import Dict, Optional
+from datetime import datetime
 
-from app.models.scoring import CandidateScore, ScoringBreakdown, JobMatch, SentimentAnalysis
+from app.models.scoring import CandidateScore, ScoringBreakdown, SentimentAnalysis
 from app.chains.scoring_prompt import scoring_prompt_template
-from app.services.llm import llm_service  # your Gemini service
+from app.services.llm import llm_service
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("scoring_chain")
+logger.setLevel(logging.INFO)
 
-def calculate_skill_score(candidate_skills: List[str], required_skills: List[str]) -> int:
-    """
-    Calculate skill match percentage
-    """
-    matched = len(set(candidate_skills) & set(required_skills))
-    total = len(required_skills)
-    return int((matched / total) * 100) if total > 0 else 0
-
-async def extract_dynamic_scores(candidate_data: Dict, job_data: Dict, resume_text: str) -> Dict:
-    """
-    Generate dynamic scoring from Gemini LLM.
-    """
-    # Convert experience to integer safely
-    years_of_experience = candidate_data.get("years_of_experience", 0)
-    try:
-        years_of_experience = int(years_of_experience)
-    except (ValueError, TypeError):
-        years_of_experience = 0
-
+# ------------------------------
+# LLM-assisted extraction
+# ------------------------------
+async def extract_scores(candidate_data: Dict, job_data: Dict, resume_text: str) -> Dict:
     prompt = scoring_prompt_template.format(
-        skills=", ".join(candidate_data.get("skills", [])),
-        experience=years_of_experience,
-        resume_text=resume_text,
-        job_description=job_data.get("description", "") if job_data else ""
+        candidate_name=candidate_data.get("name", ""),
+        skills=", ".join(candidate_data.get("skills", []) or []),
+        experience=str(candidate_data.get("years_of_experience", 0)),
+        resume_text=resume_text or "",
+        job_description=(job_data.get("description") if job_data else "") or ""
     )
 
+    logger.info("===== LLM Scoring Prompt =====")
+    logger.info(f"Candidate: {candidate_data.get('name')}")
+    logger.info(f"Job: {job_data.get('title') if job_data else 'N/A'}")
+    logger.info(prompt[:2000])  # truncate for logs
+    logger.info("===== END PROMPT =====")
+
     try:
-        response_text = await llm_service.generate_response(prompt)
-        # Remove any ```json fences
-        response_text = re.sub(r"^```[a-zA-Z]*\n?", "", response_text)
-        response_text = response_text.rstrip("`").strip()
+        raw = await llm_service.generate_response(prompt)
+        logger.info("===== LLM Raw Response =====")
+        logger.info(raw[:2000])
+        logger.info("===== END LLM Raw Response =====")
 
-        # Extract JSON
-        match = re.search(r"\{.*\}", response_text, re.DOTALL)
-        if match:
-            response_text = match.group(0)
+        data = llm_service.sanitize_json(raw)
 
-        data = json.loads(response_text)
+        # Normalize numeric fields
+        numeric_keys = [
+            "overall_score", "fitment_score", "education", "projects", "skills", "experience",
+            "keywords", "ats", "grammar", "soft_skills", "readability",
+            "cultural_fit", "domain_relevance", "certifications_score"
+        ]
+        for k in numeric_keys:
+            try:
+                data[k] = int(data.get(k, 0))
+                data[k] = max(0, min(100, data[k]))
+            except Exception:
+                data[k] = 0
+
+        # Ensure defaults
+        data.setdefault("sentiment", {"overall": "Neutral", "tone": "Professional", "soft_skills_extraction": []})
+        data.setdefault("strengths", {"technical": [], "soft": []})
+        data.setdefault("weaknesses", {"technical": [], "soft": []})
+        data.setdefault("recommendation", "")
+        data.setdefault("fitment_status", "Poor")
+        data.setdefault("additional_notes", "")
+
         return data
+
     except Exception as e:
-        logger.error(f"❌ Error parsing LLM response: {e}")
-        raise
+        logger.exception(f"[extract_scores] Error: {e}")
+        return {}
 
-async def generate_candidate_score(candidate_data: Dict, job_data: Dict = None, resume_text: str = "") -> CandidateScore:
-    """
-    Generate full candidate scoring dynamically using Gemini LLM.
-    """
-    skills = candidate_data.get("skills", [])
-    required_skills = job_data.get("skills", []) if job_data else []
+# ------------------------------
+# Main orchestration
+# ------------------------------
+async def generate_candidate_score(candidate_data: Dict, job_data: Optional[Dict] = None, resume_text: str = "") -> CandidateScore:
+    request_id = str(uuid.uuid4())[:8]
+    candidate_name = candidate_data.get("name", "Unknown")
+    logger.info(f"[{request_id}] Starting scoring for candidate={candidate_name}")
 
-    # Ensure years_of_experience is int
-    years_of_experience = candidate_data.get("years_of_experience", 0)
-    try:
-        years_of_experience = int(years_of_experience)
-    except (ValueError, TypeError):
-        years_of_experience = 0
+    dynamic = await extract_scores(candidate_data, job_data or {}, resume_text)
 
-    # Dynamic LLM scores
-    dynamic_scores = await extract_dynamic_scores(candidate_data, job_data, resume_text)
-
-    scoring_breakdown = ScoringBreakdown(
-        skills=calculate_skill_score(skills, required_skills),
-        experience=min(100, int(years_of_experience / 5 * 100)),
-        education=dynamic_scores.get("education", 0),
-        projects=dynamic_scores.get("projects", 0),
-        keywords=dynamic_scores.get("keywords", 0),
-        ats=dynamic_scores.get("ats", 0),
-        grammar=dynamic_scores.get("grammar", 0),
-        soft_skills=dynamic_scores.get("soft_skills", 0),
-        readability=dynamic_scores.get("readability", 0),
-        cultural_fit=dynamic_scores.get("cultural_fit", 0),
-        domain_relevance=dynamic_scores.get("domain_relevance", 0),
-        certifications_score=dynamic_scores.get("certifications_score", 0)
-    )
-
-    job_match = JobMatch(
-        skills_matched=list(set(skills) & set(required_skills)),
-        skills_missing=list(set(required_skills) - set(skills)),
-        keyword_density={
-            "required_keywords": len(required_skills),
-            "matched": len(set(skills) & set(required_skills)),
-            "percentage": int(len(set(skills) & set(required_skills)) / len(required_skills) * 100)
-            if required_skills else 0
-        }
-    ) if required_skills else None
-
-    sentiment = SentimentAnalysis(
-        overall="Positive",
-        tone="Professional",
-        soft_skills_extraction=dynamic_scores.get("soft_skills_extraction", [])
+    breakdown = ScoringBreakdown(
+        skills=dynamic.get("skills", 0),
+        experience=dynamic.get("experience", 0),
+        education=dynamic.get("education", 0),
+        projects=dynamic.get("projects", 0),
+        keywords=dynamic.get("keywords", 0),
+        ats=dynamic.get("ats", 0),
+        grammar=dynamic.get("grammar", 0),
+        soft_skills=dynamic.get("soft_skills", 0),
+        readability=dynamic.get("readability", 0),
+        cultural_fit=dynamic.get("cultural_fit", 0),
+        domain_relevance=dynamic.get("domain_relevance", 0),
+        certifications_score=dynamic.get("certifications_score", 0),
     )
 
     now = datetime.utcnow()
-    return CandidateScore(
-        candidate_id=str(candidate_data.get("id")),
-        job_id=str(job_data.get("id")) if job_data else None,
-        overall_score=scoring_breakdown.skills,
-        fitment_score=int((scoring_breakdown.skills + scoring_breakdown.experience) / 2),
-        scoring_breakdown=scoring_breakdown,
-        job_match=job_match,
-        sentiment=sentiment,
-        strengths={
-            "technical": list(set(skills) & set(required_skills))[:5],
-            "soft": sentiment.soft_skills_extraction
-        },
-        weaknesses={
-            "technical": list(set(required_skills) - set(skills))[:5],
-            "soft": []  # can optionally extract missing soft skills from LLM
-        },
-        recommendation=dynamic_scores.get("recommendation", ""),
-        fitment_status="Good Fit" if scoring_breakdown.skills > 70 else "Average",
+
+    score = CandidateScore(
+        candidate_id=candidate_data.get("id"),
+        job_id=job_data.get("id") if job_data else None,
+        overall_score=dynamic.get("overall_score", 0),
+        fitment_score=dynamic.get("fitment_score", 0),
+        scoring_breakdown=breakdown,
+        job_match=None,
+        sentiment=SentimentAnalysis(**dynamic.get("sentiment")) if dynamic.get("sentiment") else None,
+        strengths=dynamic.get("strengths", {}),
+        weaknesses=dynamic.get("weaknesses", {}),
+        recommendation=dynamic.get("recommendation", ""),
+        fitment_status=dynamic.get("fitment_status", "Poor"),
         ranking_score=None,
         percentile=None,
-        scoring_version="v1.1",
-        deleted=False,
-        deleted_at=None,
-        created_at=now,
-        updated_at=now
+        scoring_version="v2.0",
+        created_at=now,   # ✅ REQUIRED FIELD FIX
+        updated_at=now    # ✅ REQUIRED FIELD FIX
     )
+
+    logger.info(f"[{request_id}] Finished scoring for candidate={candidate_name}")
+    return score

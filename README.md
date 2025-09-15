@@ -12,66 +12,89 @@ smart-hr-bot/
 ├── backend/
 │   ├── app/
 │   │   ├── __init__.py
-│   │   ├── main.py                # FastAPI entrypoint (uvicorn app.main:app --reload)
+│   │   ├── main.py
 │   │   │
-│   │   ├── api/                   # Routers (controllers)
+│   │   ├── api/
 │   │   │   ├── __init__.py
-│   │   │   ├── auth.py            # Google, Keka, MS SSO routes
-│   │   │   ├── users.py           # User CRUD APIs
-│   │   │   ├── resume.py          # Resume upload + parsing APIs
-│   │   │   ├── interview.py       # AI interview simulation endpoints
-│   │   │   ├── calendar.py        # Google Calendar integration
-│   │   │   ├── notifications.py   # Email/SMS notifications
+│   │   │   ├── auth.py
+│   │   │   ├── users.py
+│   │   │   ├── resume.py
+│   │   │   ├── interview.py
+│   │   │   ├── calendar.py
+│   │   │   ├── notifications.py
+│   │   │   ├── feedback.py
+│   │   │   ├── scoring.py
+│   │   │   └── jobs.py
 │   │   │
-│   │   ├── chains/                # AI pipelines / workflows
+│   │   ├── chains/
 │   │   │   ├── __init__.py
-│   │   │   ├── resume_parser.py   # LLM + PDF parsing
-│   │   │   ├── interview_chain.py # Simulated interview flow
-│   │   │   ├── evaluation.py      # Candidate evaluation scoring
+│   │   │   ├── resume_parser.py
+│   │   │   ├── interview_chain.py
+│   │   │   ├── evaluation.py
+│   │   │   ├── scoring_chain.py
+│   │   │   ├── feedback_chain.py
+│   │   │   └── training_data_chain.py
 │   │   │
-│   │   ├── services/              # Business logic + integrations
+│   │   ├── services/
 │   │   │   ├── __init__.py
-│   │   │   ├── vectorstore.py     # FAISS / Pinecone storage
-│   │   │   ├── llm.py             # Gemini / OpenAI client wrappers
-│   │   │   ├── pdf_service.py     # Resume PDF/DOCX extraction
-│   │   │   ├── calendar_service.py# Google Calendar API wrapper
-│   │   │   ├── notification_service.py # Email, Twilio/Kaleyra SMS
-│   │   │   ├── auth_service.py    # OAuth2, JWT utils
+│   │   │   ├── vectorstore.py
+│   │   │   ├── llm.py
+│   │   │   ├── pdf_service.py
+│   │   │   ├── calendar_service.py
+│   │   │   ├── notification_service.py
+│   │   │   ├── auth_service.py
+│   │   │   ├── scoring_service.py
+│   │   │   ├── interview_service.py
+│   │   │   └── feedback_service.py
 │   │   │
-│   │   ├── models/                # Pydantic request/response schemas
+│   │   ├── models/
 │   │   │   ├── __init__.py
 │   │   │   ├── user.py
 │   │   │   ├── resume.py
 │   │   │   ├── interview.py
 │   │   │   ├── auth.py
+│   │   │   ├── feedback.py
+│   │   │   ├── scoring.py
+│   │   │   └── job.py
 │   │   │
-│   │   ├── core/                  # Infra & configs
+│   │   ├── core/
 │   │   │   ├── __init__.py
-│   │   │   ├── config.py          # Env settings
-│   │   │   ├── logger.py          # Logging setup
-│   │   │   ├── security.py        # Password rules, JWT utils
-│   │   │   ├── db.py              # Mongo/Postgres init
+│   │   │   ├── config.py
+│   │   │   ├── logger.py
+│   │   │   ├── security.py
+│   │   │   └── db.py
 │   │   │
-│   │   ├── utils/                 # Helper functions
+│   │   ├── utils/
 │   │   │   ├── __init__.py
 │   │   │   ├── file_utils.py
 │   │   │   ├── text_utils.py
 │   │   │   ├── date_utils.py
+│   │   │   ├── email_utils.py
+│   │   │   ├── validation_utils.py
+│   │   │   └── logging_utils.py
 │   │   │
 │   │   └── logs/
 │   │       └── app.log
 │   │
-│   ├── tests/                     # Unit + integration tests
+│   ├── tests/
 │   │   ├── __init__.py
 │   │   ├── test_auth.py
 │   │   ├── test_resume.py
 │   │   ├── test_interview.py
+│   │   ├── test_calendar.py
+│   │   ├── test_feedback.py
+│   │   ├── test_scoring.py
+│   │   └── test_jobs.py
 │   │
-│   ├── requirements.txt           # Python deps
+│   ├── requirements.txt
 │   ├── Dockerfile
 │   ├── docker-compose.yml
-│   ├── .env.example               # Env vars template
-│   └── alembic/                   # DB migrations (if using SQL DB)
+│   ├── .env.example
+│   └── alembic/
+│       ├── env.py
+│       ├── README
+│       └── versions/
+│           └── (migration scripts)
 │
 ├── frontend/
 │   ├── public/
@@ -83,10 +106,14 @@ smart-hr-bot/
 │   │   │   ├── Sidebar.tsx
 │   │   │   ├── InterviewUI.tsx
 │   │   │   ├── ResumeUpload.tsx
+│   │   │   ├── DashboardCard.tsx
+│   │   │   ├── CalendarWidget.tsx
 │   │   │   └── css/
 │   │   │       ├── Navbar.css
+│   │   │       ├── Sidebar.css
 │   │   │       ├── ResumeUpload.css
-│   │   │       └── Sidebar.css
+│   │   │       ├── DashboardCard.css
+│   │   │       └── CalendarWidget.css
 │   │   │
 │   │   ├── pages/
 │   │   │   ├── Home.tsx
@@ -94,9 +121,17 @@ smart-hr-bot/
 │   │   │   ├── Dashboard.tsx
 │   │   │   ├── Interviews.tsx
 │   │   │   ├── Calendar.tsx
+│   │   │   ├── ResumeLibrary.tsx
+│   │   │   ├── Feedback.tsx
+│   │   │   └── JobPostings.tsx
 │   │   │
 │   │   ├── services/
-│   │   │   ├── api.ts             # ✅ Single Axios service (all APIs here)
+│   │   │   └── api.ts
+│   │   │
+│   │   ├── utils/
+│   │   │   ├── dateUtils.ts
+│   │   │   ├── textUtils.ts
+│   │   │   └── fileUtils.ts
 │   │   │
 │   │   ├── App.tsx
 │   │   ├── index.tsx
@@ -106,19 +141,21 @@ smart-hr-bot/
 │   ├── package.json
 │   ├── tsconfig.json
 │   ├── vite.config.ts
-│   └── tailwind.config.js (optional if using Tailwind)
+│   └── tailwind.config.js
 │
 ├── docs/
 │   ├── architecture.md
 │   ├── api_reference.md
-│   └── roadmap.md
+│   ├── roadmap.md
+│   └── changelog.md
 │
 ├── scripts/
 │   ├── seed_data.py
 │   ├── backup_db.py
+│   └── cleanup_temp_files.py
 │
 ├── .gitignore
-├── README.md
+└── README.md
 ```
 
 ---

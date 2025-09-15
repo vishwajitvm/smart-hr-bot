@@ -1,47 +1,41 @@
-/* ResumeScoring.css */
-
 /* --- General Layout --- */
 .resume-dashboard {
   display: flex;
   gap: 1rem;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f7f8fa;
+  background-color: #f5f6fa;
   padding: 1rem;
   min-height: 100vh;
 }
 
 /* --- Filters Panel --- */
 .filters {
-  width: 260px;
+  width: 280px;
   background-color: #fff;
   padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
 .filters h3 {
-  font-size: 1.2rem;
-  margin-bottom: 1rem;
+  font-size: 1.4rem;
   color: #333;
 }
 
 .filters label {
   font-weight: 600;
-  margin-top: 0.5rem;
-  margin-bottom: 0.2rem;
-  display: block;
   color: #555;
 }
 
 .filters input, .filters select {
   width: 100%;
-  padding: 0.4rem 0.6rem;
-  border-radius: 6px;
+  padding: 0.5rem;
+  border-radius: 8px;
   border: 1px solid #ccc;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
 }
 
 .filters button {
@@ -51,7 +45,7 @@
   font-weight: 600;
   padding: 0.6rem;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   transition: 0.2s;
 }
@@ -73,15 +67,37 @@
   width: 100%;
   border-collapse: collapse;
   background-color: #fff;
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  table-layout: fixed;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
 .candidate-table th, .candidate-table td {
   padding: 0.8rem 1rem;
   text-align: left;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
+
+/* Optional: control width of each column */
+.candidate-table th:nth-child(1),
+.candidate-table td:nth-child(1) { width: 12%; } /* Name */
+.candidate-table th:nth-child(2),
+.candidate-table td:nth-child(2) { width: 18%; } /* Email */
+.candidate-table th:nth-child(3),
+.candidate-table td:nth-child(3) { width: 12%; } /* Phone */
+.candidate-table th:nth-child(4),
+.candidate-table td:nth-child(4) { width: 10%; } /* Applied At */
+.candidate-table th:nth-child(5),
+.candidate-table td:nth-child(5) { width: 15%; } /* Job */
+.candidate-table th:nth-child(6),
+.candidate-table td:nth-child(6) { width: 7%; }
+.candidate-table th:nth-child(7),
+.candidate-table td:nth-child(7) { width: 4%; } /* Action */
+/* .candidate-table th:nth-child(8),
+.candidate-table td:nth-child(8) { width: 8%; } */
 
 .candidate-table th {
   background-color: #4a90e2;
@@ -101,7 +117,7 @@
   color: #fff;
   border: none;
   padding: 0.4rem 0.7rem;
-  border-radius: 5px;
+  border-radius: 6px;
   cursor: pointer;
   font-size: 0.85rem;
 }
@@ -114,25 +130,24 @@
 .candidate-details {
   background-color: #fff;
   padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  margin-top: 1rem;
 }
 
 /* --- Tabs --- */
 .tabs {
   display: flex;
-  gap: 0.5rem;
+  gap: 1rem;
   margin-bottom: 1rem;
 }
 
 .tabs button {
-  background-color: #f1f3f6;
-  border: none;
   padding: 0.5rem 1rem;
+  background: #f1f3f6;
+  border: none;
   border-radius: 6px;
   cursor: pointer;
-  font-weight: 600;
-  transition: 0.2s;
 }
 
 .tabs button.active {
@@ -140,128 +155,285 @@
   color: #fff;
 }
 
-.tabs button:hover:not(.active) {
-  background-color: #dbe6f7;
-}
-
-/* --- Charts Layout --- */
+/* --- Charts --- */
 .charts {
   display: flex;
   gap: 2rem;
   flex-wrap: wrap;
-  margin-top: 1rem;
-  justify-content: space-between;
+  padding-left: 3rem; /* more space for left labels */
+  padding-right: 1rem;
+  overflow-x: auto;    
 }
 
-/* --- Advanced Metrics --- */
+.charts > * {
+  flex-shrink: 0;
+}
+
+.chart-wrapper {
+  padding-left: 1rem;
+  padding-right: 1rem;
+  overflow: hidden;
+}
+
+
+/* --- Advanced Metrics Table --- */
 .advanced-metrics {
   margin-top: 1.5rem;
 }
 
 .advanced-metrics h4 {
-  font-size: 1.1rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.8rem;
   color: #333;
 }
 
-.advanced-metrics ul {
-  list-style: none;
-  padding-left: 0;
+.metrics-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  border-radius: 10px;
+  overflow: hidden;
 }
 
-.advanced-metrics li {
-  padding: 0.3rem 0;
-  font-size: 0.95rem;
+.metrics-table tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.metrics-table tbody tr:hover {
+  background-color: #e6f0fa;
+}
+
+.metrics-table td {
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid #ddd;
+}
+
+.metrics-table td:first-child {
+  font-weight: 600;
+  color: #555;
+  width: 250px;
 }
 
 /* --- Chat Tab --- */
-.chat-tab {
-  margin-top: 1rem;
-}
-
 .chat-box {
-  background-color: #f1f3f6;
-  padding: 1rem;
+  border: 1px solid #ccc;
   border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-  max-height: 300px;
+  padding: 1rem;
+  background-color: #f9f9f9;
+}
+
+.chat-box .messages {
+  height: 150px;
   overflow-y: auto;
+  margin-bottom: 0.5rem;
 }
 
-.chat-box .messages p {
-  margin: 0;
-  background-color: #fff;
-  padding: 0.5rem;
-  border-radius: 6px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-}
-
-.chat-input {
+.chat-box .chat-input {
   display: flex;
   gap: 0.5rem;
-  margin-top: auto;
 }
 
-.chat-input input {
+.chat-box input {
   flex: 1;
-  padding: 0.5rem;
+  padding: 0.4rem;
   border-radius: 6px;
   border: 1px solid #ccc;
 }
 
-.chat-input button {
+.chat-box button {
+  padding: 0.4rem 0.7rem;
   background-color: #4a90e2;
   color: #fff;
   border: none;
-  padding: 0.5rem 1rem;
   border-radius: 6px;
   cursor: pointer;
-  font-weight: 600;
 }
 
-.chat-input button:hover {
+.chat-box button:hover {
   background-color: #357ABD;
 }
 
 /* --- Comparison Tab --- */
-.comparison-tab {
-  margin-top: 1rem;
-}
-
 .comparison-tab table {
   width: 100%;
   border-collapse: collapse;
-  background-color: #fff;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 .comparison-tab th, .comparison-tab td {
-  padding: 0.8rem 1rem;
-  border-bottom: 1px solid #eee;
+  padding: 0.6rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #ccc;
 }
 
-.comparison-tab th {
-  background-color: #4a90e2;
+/* --- Tooltip Fix --- */
+.recharts-tooltip-wrapper {
+  pointer-events: none;
+  font-size: 0.85rem;
+}
+
+/* --- Optional: scroll bar styling --- */
+.charts::-webkit-scrollbar {
+  height: 6px;
+}
+
+.charts::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.2);
+  border-radius: 3px;
+}
+
+.metric-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.3rem 0;
+}
+
+.metric-row strong {
+  margin-bottom: 0.2rem;
+}
+
+.progress-bar-container {
+  width: 100%;
+  background: #f1f3f6;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 22px;
   color: #fff;
+  text-align: right;
+  padding-right: 0.5rem;
+  line-height: 22px;
+  border-radius: 6px;
+  transition: width 0.3s;
 }
 
-/* --- Responsive --- */
-@media screen and (max-width: 1024px) {
-  .resume-dashboard {
-    flex-direction: column;
-  }
-  .filters {
-    width: 100%;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-  .charts {
-    flex-direction: column;
-    align-items: center;
-  }
+.score-breakdown .breakdown-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.breakdown-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.breakdown-label {
+  width: 160px;
+  font-weight: 600;
+}
+
+.breakdown-bar-container {
+  flex: 1;
+  background: #f1f3f6;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.breakdown-bar {
+  height: 20px;
+  color: #fff;
+  text-align: right;
+  padding-right: 0.5rem;
+  line-height: 20px;
+  border-radius: 6px;
+  transition: width 0.3s;
+}
+
+
+.progress-bar-container {
+  width: 100%;
+  background: #f1f3f6;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 24px;
+  color: #fff;
+  text-align: right;
+  padding-right: 0.5rem;
+  line-height: 24px;
+  border-radius: 6px;
+  transition: width 0.4s ease-in-out;
+  white-space: nowrap;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* Pagination Row */
+.candidate-table .pagination {
+  display: inline-flex;
+  gap: 6px;
+  justify-content: center;
+  align-items: center;
+  margin: 0.5rem 0;
+}
+
+.candidate-table .pagination button {
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s ease-in-out;
+}
+
+.candidate-table .pagination button:hover:not(:disabled) {
+  background: #f3f4f6;
+}
+
+.candidate-table .pagination button.active {
+  background: #3b82f6;
+  color: #fff;
+  border-color: #3b82f6;
+}
+
+.candidate-table .pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Ellipsis (…) style */
+.candidate-table .pagination span {
+  padding: 0 8px;
+  color: #666;
+  font-size: 13px;
+}
+
+/* Pagination container */
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin: 1rem 0;
+}
+
+/* Page buttons */
+.pagination button {
+  background-color: #ffffff;   /* White background for inactive */
+  border: 1px solid #ddd;
+  color: #333;                 /* Dark text for visibility */
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Hover effect */
+.pagination button:hover {
+  background-color: #f0f0f0;
+  border-color: #aaa;
+}
+
+/* Active page */
+.pagination button.active {
+  background-color: #3b82f6;  /* Blue active background */
+  color: #fff;                /* White text */
+  border-color: #3b82f6;
+  font-weight: bold;
 }

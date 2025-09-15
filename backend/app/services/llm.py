@@ -2,69 +2,86 @@ import google.generativeai as genai
 from app.core.config import settings
 from app.models.job_ai import JobAIRequest, JobAISuggestion
 from app.chains.job_prompt import job_prompt
-import logging
-import uuid
-import json
-import re 
-from fastapi import HTTPException 
+import logging, uuid, json, re, asyncio
+from tenacity import retry, wait_exponential, stop_after_attempt
 
 logger = logging.getLogger(__name__)
+
+
+class LLMServiceError(Exception):
+    """Custom error for LLM failures."""
 
 
 class LLMService:
     def __init__(self):
         try:
-            # Configure Gemini
             genai.configure(api_key=settings.GEMINI_API_KEY)
             self.model = genai.GenerativeModel(settings.GEMINI_MODEL)
             logger.info(f"✅ Gemini LLM initialized with model: {settings.GEMINI_MODEL}")
         except Exception as e:
             logger.error(f"❌ Failed to initialize Gemini: {str(e)}")
-            raise
+            raise LLMServiceError("Failed to initialize Gemini")
 
-    async def generate_response(self, prompt: str) -> str:
-        """
-        Generate a plain text response from Gemini given a prompt.
-        """
+    @staticmethod
+    def _extract_text(response) -> str:
+        """Extract plain text from Gemini response."""
         try:
-            logger.debug(f"Gemini request prompt: {prompt[:200]}...")
-            response = self.model.generate_content(prompt)
+            return response.candidates[0].content.parts[0].text.strip()
+        except Exception:
+            raise LLMServiceError("Gemini returned no usable content")
 
-            if response and response.candidates:
-                text = response.candidates[0].content.parts[0].text
-                logger.debug(f"Gemini response: {text[:200]}...")
-                return text
-            else:
-                logger.warning("⚠️ Gemini returned empty response.")
-                return "Sorry, I couldn’t generate a response."
+    @retry(wait=wait_exponential(min=1, max=8), stop=stop_after_attempt(3))
+    async def generate_response(self, prompt: str) -> str:
+        """Generate plain text response with retries and async safe call."""
+        logger.debug(f"Gemini request prompt: {prompt[:200]}...")
+
+        try:
+            response = await asyncio.to_thread(self.model.generate_content, prompt)
+            text = self._extract_text(response)
+            logger.debug(f"Gemini response: {text[:200]}...")
+            return text
         except Exception as e:
             logger.error(f"❌ Error in Gemini generate_response: {str(e)}")
-            return "An error occurred while generating response."
+            raise LLMServiceError("Failed to generate response")
 
     async def generate_chat(self, history: list, user_input: str) -> str:
-        """
-        Generate a conversational response given chat history + user input.
-        History is expected as a list of dicts: [{"role": "user"/"model", "text": "..."}]
-        """
-        try:
-            logger.debug(f"Chat history: {history}, User input: {user_input}")
+        """Generate conversational response given chat history + input."""
+        logger.debug(f"Chat history size={len(history)}, User input: {user_input[:100]}")
 
+        try:
             chat = self.model.start_chat(history=[
                 {"role": h["role"], "parts": [h["text"]]} for h in history
             ])
-
-            response = chat.send_message(user_input)
-
-            if response and response.candidates:
-                text = response.candidates[0].content.parts[0].text
-                logger.debug(f"Gemini chat response: {text[:200]}...")
-                return text
-            else:
-                logger.warning("⚠️ Gemini returned empty chat response.")
-                return "Sorry, I couldn’t generate a chat response."
+            response = await asyncio.to_thread(chat.send_message, user_input)
+            return self._extract_text(response)
         except Exception as e:
             logger.error(f"❌ Error in Gemini generate_chat: {str(e)}")
-            return "An error occurred while processing chat."
+            raise LLMServiceError("Failed to generate chat response")
+        
+    # Expose sanitizer for external use
+    def sanitize_json(self, raw_text: str) -> dict:
+        return _sanitize_json_output(raw_text)
+
+
+# --- Utilities ---
+def _sanitize_json_output(raw_text: str) -> dict:
+    logger.debug(f"🔍 Raw LLM output before cleaning: {raw_text[:500]}")
+    if raw_text.startswith("```"):
+        raw_text = re.sub(r"^```[a-zA-Z]*\n?", "", raw_text)
+        raw_text = raw_text.rstrip("`").strip()
+
+    match = re.search(r"\{.*\}", raw_text, re.DOTALL)
+    if match:
+        raw_text = match.group(0)
+
+    logger.debug(f"🧹 Cleaned JSON candidate: {raw_text[:500]}")
+
+    try:
+        return json.loads(raw_text)
+    except json.JSONDecodeError as e:
+        logger.error(f"❌ JSON parse error: {e} | Raw: {raw_text[:500]}")
+        raise LLMServiceError("Invalid JSON returned by Gemini")
+
         
 
 async def run_interview(candidate_name: str, role: str) -> str:
@@ -86,11 +103,6 @@ Return only the first interviewer question, not the entire interview.
     except Exception as e:
         logger.error(f"❌ Error in run_interview: {str(e)}")
         return "Failed to start interview."
-
-
-
-# Singleton instance
-llm_service = LLMService()
 
 
 # --- Wrapper for backward compatibility ---
@@ -145,3 +157,6 @@ async def generate_job_with_ai(request: JobAIRequest) -> JobAISuggestion:
     except Exception as e:
         logger.error(f"❌ Error in generate_job_with_ai: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+    
+# Singleton
+llm_service = LLMService()
