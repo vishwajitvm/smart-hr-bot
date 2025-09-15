@@ -69,13 +69,35 @@
   background-color: #fff;
   border-radius: 10px;
   overflow: hidden;
+  table-layout: fixed;
   box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
 .candidate-table th, .candidate-table td {
   padding: 0.8rem 1rem;
   text-align: left;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
+
+/* Optional: control width of each column */
+.candidate-table th:nth-child(1),
+.candidate-table td:nth-child(1) { width: 12%; } /* Name */
+.candidate-table th:nth-child(2),
+.candidate-table td:nth-child(2) { width: 18%; } /* Email */
+.candidate-table th:nth-child(3),
+.candidate-table td:nth-child(3) { width: 12%; } /* Phone */
+.candidate-table th:nth-child(4),
+.candidate-table td:nth-child(4) { width: 10%; } /* Applied At */
+.candidate-table th:nth-child(5),
+.candidate-table td:nth-child(5) { width: 15%; } /* Job */
+.candidate-table th:nth-child(6),
+.candidate-table td:nth-child(6) { width: 7%; }
+.candidate-table th:nth-child(7),
+.candidate-table td:nth-child(7) { width: 4%; } /* Action */
+/* .candidate-table th:nth-child(8),
+.candidate-table td:nth-child(8) { width: 8%; } */
 
 .candidate-table th {
   background-color: #4a90e2;

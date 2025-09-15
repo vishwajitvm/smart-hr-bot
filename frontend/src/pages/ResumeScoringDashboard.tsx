@@ -42,6 +42,29 @@ export default function ResumeScoringDashboard() {
     }
   };
 
+  const timeAgo = (dateString: string): string => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  let interval = Math.floor(seconds / 31536000);
+  if (interval >= 1) return `${interval} year${interval > 1 ? "s" : ""} ago`;
+
+  interval = Math.floor(seconds / 2592000);
+  if (interval >= 1) return `${interval} month${interval > 1 ? "s" : ""} ago`;
+
+  interval = Math.floor(seconds / 86400);
+  if (interval >= 1) return `${interval} day${interval > 1 ? "s" : ""} ago`;
+
+  interval = Math.floor(seconds / 3600);
+  if (interval >= 1) return `${interval} hr${interval > 1 ? "s" : ""} ago`;
+
+  interval = Math.floor(seconds / 60);
+  if (interval >= 1) return `${interval} min${interval > 1 ? "s" : ""} ago`;
+
+  return "Just now";
+};
+
   const renderPagination = () => {
     const pages = [];
     const { currentPage, totalPages } = pagination;
@@ -137,10 +160,12 @@ export default function ResumeScoringDashboard() {
             <tr>
               <th>Name</th>
               <th>Email</th>
+              <th>Phone</th>
+               <th>Applied At</th>
               <th>Job</th>
-              <th>Score</th>
+              {/* <th>Score</th> */}
               <th>Action</th>
-              <th>Compare</th>
+              <th> </th>
             </tr>
           </thead>
           <tbody>
@@ -148,8 +173,12 @@ export default function ResumeScoringDashboard() {
               <tr key={c.candidate.id}>
                 <td>{c.candidate?.name ?? "N/A"}</td>
                 <td>{c.candidate?.email ?? "N/A"}</td>
+                <td>{c.candidate?.phone ?? "N/A"}</td>
+        <td>
+                  {c.score?.created_at ? timeAgo(c.score.created_at) : "N/A"}
+                </td>
                 <td>{c.job?.title ?? "N/A"}</td>
-                <td>{c.score?.overall_score ?? 0}%</td>
+                {/* <td>{c.score?.overall_score ?? 0}%</td> */}
                 <td>
                   <button onClick={() => viewCandidateDetails(c.candidate.id)}>View</button>
                 </td>
@@ -289,6 +318,34 @@ export default function ResumeScoringDashboard() {
                         <td>{selectedCandidate.score?.fitment_status ?? "N/A"}</td>
                       </tr>
 
+                      {/* Sentiment Analysis */}
+                      <tr>
+                        <td>Sentiment</td>
+                        <td>{selectedCandidate.score?.sentiment?.overall ?? "N/A"}</td>
+                      </tr>
+                      <tr>
+                        <td>Sentiment Tone</td>
+                        <td>{selectedCandidate.score?.sentiment?.tone ?? "N/A"}</td>
+                      </tr>
+
+                      {/* Strengths & Weaknesses */}
+                      <tr>
+                        <td>Strengths (Technical)</td>
+                        <td>{selectedCandidate.score?.strengths?.technical?.join(", ") || "N/A"}</td>
+                      </tr>
+                      <tr>
+                        <td>Strengths (Soft Skills)</td>
+                        <td>{selectedCandidate.score?.strengths?.soft?.join(", ") || "N/A"}</td>
+                      </tr>
+                      <tr>
+                        <td>Weaknesses (Technical)</td>
+                        <td>{selectedCandidate.score?.weaknesses?.technical?.join(", ") || "N/A"}</td>
+                      </tr>
+                      <tr>
+                        <td>Weaknesses (Soft Skills)</td>
+                        <td>{selectedCandidate.score?.weaknesses?.soft?.join(", ") || "N/A"}</td>
+                      </tr>
+
                       {/* Fitment Score */}
                       <tr>
                         <td>Fitment Score</td>
@@ -339,33 +396,7 @@ export default function ResumeScoringDashboard() {
                         );
                       })}
 
-                      {/* Sentiment Analysis */}
-                      <tr>
-                        <td>Sentiment</td>
-                        <td>{selectedCandidate.score?.sentiment?.overall ?? "N/A"}</td>
-                      </tr>
-                      <tr>
-                        <td>Sentiment Tone</td>
-                        <td>{selectedCandidate.score?.sentiment?.tone ?? "N/A"}</td>
-                      </tr>
-
-                      {/* Strengths & Weaknesses */}
-                      <tr>
-                        <td>Strengths (Technical)</td>
-                        <td>{selectedCandidate.score?.strengths?.technical?.join(", ") || "N/A"}</td>
-                      </tr>
-                      <tr>
-                        <td>Strengths (Soft Skills)</td>
-                        <td>{selectedCandidate.score?.strengths?.soft?.join(", ") || "N/A"}</td>
-                      </tr>
-                      <tr>
-                        <td>Weaknesses (Technical)</td>
-                        <td>{selectedCandidate.score?.weaknesses?.technical?.join(", ") || "N/A"}</td>
-                      </tr>
-                      <tr>
-                        <td>Weaknesses (Soft Skills)</td>
-                        <td>{selectedCandidate.score?.weaknesses?.soft?.join(", ") || "N/A"}</td>
-                      </tr>
+                      
                     </tbody>
                   </table>
                 </div>

@@ -12,6 +12,12 @@ services:
       - "8000:8000"
     networks:
       - smart_hr_network
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+      - 1.1.1.1
+    extra_hosts:
+      - "registry-1.docker.io:3.88.79.16"   # one of the IPv4 addresses from nslookup
     # healthcheck:
     #   test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
     #   interval: 30s
