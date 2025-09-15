@@ -342,3 +342,76 @@
   font-size: 0.9rem;
 }
 
+/* Pagination Row */
+.candidate-table .pagination {
+  display: inline-flex;
+  gap: 6px;
+  justify-content: center;
+  align-items: center;
+  margin: 0.5rem 0;
+}
+
+.candidate-table .pagination button {
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s ease-in-out;
+}
+
+.candidate-table .pagination button:hover:not(:disabled) {
+  background: #f3f4f6;
+}
+
+.candidate-table .pagination button.active {
+  background: #3b82f6;
+  color: #fff;
+  border-color: #3b82f6;
+}
+
+.candidate-table .pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Ellipsis (…) style */
+.candidate-table .pagination span {
+  padding: 0 8px;
+  color: #666;
+  font-size: 13px;
+}
+
+/* Pagination container */
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin: 1rem 0;
+}
+
+/* Page buttons */
+.pagination button {
+  background-color: #ffffff;   /* White background for inactive */
+  border: 1px solid #ddd;
+  color: #333;                 /* Dark text for visibility */
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Hover effect */
+.pagination button:hover {
+  background-color: #f0f0f0;
+  border-color: #aaa;
+}
+
+/* Active page */
+.pagination button.active {
+  background-color: #3b82f6;  /* Blue active background */
+  color: #fff;                /* White text */
+  border-color: #3b82f6;
+  font-weight: bold;
+}

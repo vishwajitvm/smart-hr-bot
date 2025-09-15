@@ -12,7 +12,12 @@ export default function ResumeScoringDashboard() {
   const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
   const [activeTab, setActiveTab] = useState("details");
   const [comparisonCandidates, setComparisonCandidates] = useState<any[]>([]);
-  const [pagination, setPagination] = useState({ currentPage: 1, totalPages: 1 });
+  const [pagination, setPagination] = useState({
+    totalCount: 0,
+    totalPages: 1,
+    currentPage: 1,
+    hasMore: false,
+  });
 
   const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#0088FE", "#FFBB28", "#FF8042"];
 
@@ -22,18 +27,52 @@ export default function ResumeScoringDashboard() {
 
   const loadCandidates = async (page: number) => {
     try {
-      const res: any = await fetchCandidatesWithScores(page, 10);
+      const res: any = await fetchCandidatesWithScores(page, 2);
       if (res?.data?.candidates) {
         setCandidates(res.data.candidates);
         setPagination({
           currentPage: res.data.pagination?.currentPage ?? 1,
           totalPages: res.data.pagination?.totalPages ?? 1,
+          totalCount: res.data.pagination?.totalCount ?? 0,
+          hasMore: res.data.pagination?.hasMore ?? false,
         });
       }
     } catch (err) {
       console.error("Failed to fetch candidates", err);
     }
   };
+
+  const renderPagination = () => {
+    const pages = [];
+    const { currentPage, totalPages } = pagination;
+    const maxVisible = 5; // show 5 pages around current
+
+    let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+    let end = Math.min(totalPages, start + maxVisible - 1);
+
+    if (end - start < maxVisible - 1) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+
+    if (start > 1) pages.push(<span key="first">1 ...</span>);
+
+    for (let i = start; i <= end; i++) {
+      pages.push(
+        <button
+          key={i}
+          className={i === currentPage ? "active" : ""}
+          onClick={() => loadCandidates(i)}
+        >
+          {i}
+        </button>
+      );
+    }
+
+    if (end < totalPages) pages.push(<span key="last">... {totalPages}</span>);
+
+    return pages;
+  };
+
 
   const viewCandidateDetails = async (candidateId: string) => {
     try {
@@ -128,9 +167,33 @@ export default function ResumeScoringDashboard() {
                   />
                 </td>
               </tr>
+
             ))}
+            {/* Pagination Row */}
+            <tr>
+              <td colSpan={6} style={{ textAlign: "center" }}>
+                <div className="pagination">
+                  <button
+                    disabled={pagination.currentPage === 1}
+                    onClick={() => loadCandidates(pagination.currentPage - 1)}
+                  >
+                    Previous
+                  </button>
+
+                  {renderPagination()}
+
+                  <button
+                    disabled={pagination.currentPage === pagination.totalPages}
+                    onClick={() => loadCandidates(pagination.currentPage + 1)}
+                  >
+                    Next
+                  </button>
+                </div>
+              </td>
+            </tr>
           </tbody>
         </table>
+
 
         {/* Selected Candidate Details */}
         {selectedCandidate && (
@@ -336,12 +399,12 @@ export default function ResumeScoringDashboard() {
                   <table>
                     <thead>
                       <tr>
-                        <th>Name</th>
-                        <th>Score</th>
-                        <th>Skills</th>
-                        <th>Experience</th>
-                        <th>Education</th>
-                        <th>Projects</th>
+                        <th className="has-text-dark">Name</th>
+                        <th className="has-text-dark">Score</th>
+                        <th className="has-text-dark">Skills</th>
+                        <th className="has-text-dark">Experience</th>
+                        <th className="has-text-dark">Education</th>
+                        <th className="has-text-dark">Projects</th>
                       </tr>
                     </thead>
                     <tbody>
