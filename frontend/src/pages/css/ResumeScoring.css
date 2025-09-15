@@ -113,6 +113,7 @@
   margin-top: 1rem;
 }
 
+/* --- Tabs --- */
 .tabs {
   display: flex;
   gap: 1rem;
@@ -137,23 +138,58 @@
   display: flex;
   gap: 2rem;
   flex-wrap: wrap;
-  padding-left: 2rem; /* fix for left-side label cut */
-  overflow-x: auto;    /* horizontal scroll if charts are wide */
+  padding-left: 3rem; /* more space for left labels */
+  padding-right: 1rem;
+  overflow-x: auto;    
 }
 
-/* Optional: make individual charts responsive */
 .charts > * {
-  flex-shrink: 0;   /* prevent shrinking that cuts labels */
+  flex-shrink: 0;
 }
 
-/* --- Advanced Metrics --- */
-.advanced-metrics ul {
-  list-style-type: none;
-  padding-left: 0;
+.chart-wrapper {
+  padding-left: 1rem;
+  padding-right: 1rem;
+  overflow: hidden;
 }
 
-.advanced-metrics li {
-  padding: 0.3rem 0;
+
+/* --- Advanced Metrics Table --- */
+.advanced-metrics {
+  margin-top: 1.5rem;
+}
+
+.advanced-metrics h4 {
+  margin-bottom: 0.8rem;
+  color: #333;
+}
+
+.metrics-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.metrics-table tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.metrics-table tbody tr:hover {
+  background-color: #e6f0fa;
+}
+
+.metrics-table td {
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid #ddd;
+}
+
+.metrics-table td:first-child {
+  font-weight: 600;
+  color: #555;
+  width: 250px;
 }
 
 /* --- Chat Tab --- */
@@ -222,3 +258,87 @@
   background: rgba(0,0,0,0.2);
   border-radius: 3px;
 }
+
+.metric-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.3rem 0;
+}
+
+.metric-row strong {
+  margin-bottom: 0.2rem;
+}
+
+.progress-bar-container {
+  width: 100%;
+  background: #f1f3f6;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 22px;
+  color: #fff;
+  text-align: right;
+  padding-right: 0.5rem;
+  line-height: 22px;
+  border-radius: 6px;
+  transition: width 0.3s;
+}
+
+.score-breakdown .breakdown-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.breakdown-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.breakdown-label {
+  width: 160px;
+  font-weight: 600;
+}
+
+.breakdown-bar-container {
+  flex: 1;
+  background: #f1f3f6;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.breakdown-bar {
+  height: 20px;
+  color: #fff;
+  text-align: right;
+  padding-right: 0.5rem;
+  line-height: 20px;
+  border-radius: 6px;
+  transition: width 0.3s;
+}
+
+
+.progress-bar-container {
+  width: 100%;
+  background: #f1f3f6;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 24px;
+  color: #fff;
+  text-align: right;
+  padding-right: 0.5rem;
+  line-height: 24px;
+  border-radius: 6px;
+  transition: width 0.4s ease-in-out;
+  white-space: nowrap;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+

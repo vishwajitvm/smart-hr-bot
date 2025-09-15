@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import {
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
-  PieChart, Pie, Cell, Tooltip
+  PieChart, Pie, Cell, Tooltip,
+  BarChart, Bar, XAxis, YAxis
 } from "recharts";
 import { fetchCandidatesWithScores, fetchCandidateWithScoreById } from "../services/api";
 import "./css/ResumeScoring.css";
@@ -144,54 +145,172 @@ export default function ResumeScoringDashboard() {
             {activeTab === "details" && (
               <div className="details-tab">
                 <h3>{selectedCandidate.candidate?.name ?? "N/A"}</h3>
+
                 <div className="charts">
                   {selectedCandidate.score?.scoring_breakdown ? (
                     <>
-                      <RadarChart
-                        key={selectedCandidate.candidate.id}
-                        outerRadius={90}
-                        width={300}
-                        height={300}
-                        data={Object.entries(selectedCandidate.score.scoring_breakdown).map(([k, v]) => ({ subject: k, A: v }))}
-                      >
-                        <PolarGrid />
-                        <PolarAngleAxis dataKey="subject" />
-                        <PolarRadiusAxis />
-                        <Radar name="Score" dataKey="A" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
-                        <Tooltip />
-                      </RadarChart>
-
-                      <PieChart width={300} height={300}>
-                        <Pie
+                      {/* Radar Chart */}
+                      <div className="chart-wrapper">
+                        <RadarChart
                           key={selectedCandidate.candidate.id}
-                          data={Object.entries(selectedCandidate.score.scoring_breakdown).map(([k, v]) => ({ name: k, value: v }))}
-                          dataKey="value"
-                          cx="50%"
-                          cy="50%"
                           outerRadius={100}
-                          label
+                          width={400}
+                          height={300}
+
+                          data={Object.entries(selectedCandidate.score.scoring_breakdown).map(([k, v]) => ({ subject: k, A: v }))}
                         >
-                          {Object.entries(selectedCandidate.score.scoring_breakdown).map((_, index) => (
-                            <Cell key={index} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip />
-                      </PieChart>
+                          <PolarGrid />
+                          <PolarAngleAxis dataKey="subject" />
+                          <PolarRadiusAxis />
+                          <Radar name="Score" dataKey="A" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
+                          <Tooltip />
+                        </RadarChart>
+                      </div>
+
+                      {/* Pie Chart */}
+                      <div className="chart-wrapper">
+
+                        <PieChart width={300} height={300}>
+                          <Pie
+                            key={selectedCandidate.candidate.id}
+                            data={Object.entries(selectedCandidate.score.scoring_breakdown).map(([k, v]) => ({ name: k, value: v }))}
+                            dataKey="value"
+                            cx="50%"
+                            cy="50%"
+                            outerRadius={100}
+                            label
+                          >
+                            {Object.entries(selectedCandidate.score.scoring_breakdown).map((_, index) => (
+                              <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                        </PieChart>
+                      </div>
+
+                      {/* Additional Bar Chart */}
+                      <div className="chart-wrapper">
+
+                        <BarChart
+                          width={500}
+                          height={300}
+                          data={Object.entries(selectedCandidate.score.scoring_breakdown).map(([k, v]) => ({ name: k, score: v }))}
+                          margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
+                        >
+                          <XAxis dataKey="name" />
+                          <YAxis />
+                          <Tooltip />
+                          <Bar dataKey="score" fill="#82ca9d" />
+                        </BarChart>
+                      </div>
                     </>
-                  ) : <p>No scoring data available.</p>}
+                  ) : (
+                    <p>No scoring data available.</p>
+                  )}
                 </div>
 
+                {/* Advanced Metrics Table */}
                 <div className="advanced-metrics">
-                  <ul>
-                    <li>Sentiment: <b>{selectedCandidate.score?.sentiment?.overall ?? "N/A"}</b></li>
-                    <li>Grammar Score: <b>{selectedCandidate.score?.scoring_breakdown?.grammar ?? 0}%</b></li>
-                    <li>ATS Score: <b>{selectedCandidate.score?.scoring_breakdown?.ats ?? 0}%</b></li>
-                    <li>Skill Match Score: <b>{selectedCandidate.score?.scoring_breakdown?.skills ?? 0}%</b></li>
-                    <li>Readability Score: <b>{selectedCandidate.score?.scoring_breakdown?.readability ?? 0}%</b></li>
-                  </ul>
+                  <h4>Candidate Detailed Metrics</h4>
+                  <table className="metrics-table">
+                    <tbody>
+                      {/* Recommendation first */}
+                      <tr>
+                        <td>Recommendation</td>
+                        <td>{selectedCandidate.score?.recommendation ?? "N/A"}</td>
+                      </tr>
+
+                      {/* Fitment Status */}
+                      <tr>
+                        <td>Fitment Status</td>
+                        <td>{selectedCandidate.score?.fitment_status ?? "N/A"}</td>
+                      </tr>
+
+                      {/* Fitment Score */}
+                      <tr>
+                        <td>Fitment Score</td>
+                        <td>
+                          <div className="progress-bar-container">
+                            <div
+                              className="progress-bar"
+                              style={{ width: `${selectedCandidate.score?.fitment_score ?? 0}%`, backgroundColor: COLORS[0] }}
+                            >
+                              {selectedCandidate.score?.fitment_score ?? 0}%
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+
+                      {/* Overall Score */}
+                      <tr>
+                        <td>Overall Score</td>
+                        <td>
+                          <div className="progress-bar-container">
+                            <div
+                              className="progress-bar"
+                              style={{ width: `${selectedCandidate.score?.overall_score ?? 0}%`, backgroundColor: COLORS[1] }}
+                            >
+                              {selectedCandidate.score?.overall_score ?? 0}%
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+
+                      {/* Detailed Scoring Breakdown */}
+                      {Object.entries(selectedCandidate.score?.scoring_breakdown || {}).map(([key, value], idx) => {
+                        const score = Number(value) || 0;
+                        return (
+                          <tr key={key}>
+                            <td>{key.replace(/_/g, " ").toUpperCase()}</td>
+                            <td>
+                              <div className="progress-bar-container">
+                                <div
+                                  className="progress-bar"
+                                  style={{ width: `${score}%`, backgroundColor: COLORS[(idx + 2) % COLORS.length] }}
+                                >
+                                  {score}%
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+
+                      {/* Sentiment Analysis */}
+                      <tr>
+                        <td>Sentiment</td>
+                        <td>{selectedCandidate.score?.sentiment?.overall ?? "N/A"}</td>
+                      </tr>
+                      <tr>
+                        <td>Sentiment Tone</td>
+                        <td>{selectedCandidate.score?.sentiment?.tone ?? "N/A"}</td>
+                      </tr>
+
+                      {/* Strengths & Weaknesses */}
+                      <tr>
+                        <td>Strengths (Technical)</td>
+                        <td>{selectedCandidate.score?.strengths?.technical?.join(", ") || "N/A"}</td>
+                      </tr>
+                      <tr>
+                        <td>Strengths (Soft Skills)</td>
+                        <td>{selectedCandidate.score?.strengths?.soft?.join(", ") || "N/A"}</td>
+                      </tr>
+                      <tr>
+                        <td>Weaknesses (Technical)</td>
+                        <td>{selectedCandidate.score?.weaknesses?.technical?.join(", ") || "N/A"}</td>
+                      </tr>
+                      <tr>
+                        <td>Weaknesses (Soft Skills)</td>
+                        <td>{selectedCandidate.score?.weaknesses?.soft?.join(", ") || "N/A"}</td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
+
+
               </div>
             )}
+
 
             {/* Chat Tab */}
             {activeTab === "chat" && (
