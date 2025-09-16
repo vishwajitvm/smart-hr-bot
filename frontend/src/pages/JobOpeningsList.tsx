@@ -106,7 +106,18 @@ export default function JobOpeningsList() {
   };
 
   const handleStatusToggle = async (job: Job) => {
-    const newStatus = job.status === 1 ? 0 : 1;
+  const newStatus = job.status === 1 ? 0 : 1;
+
+  const result = await Swal.fire({
+    title: "Are you sure?",
+    text: `Do you want to change status to ${newStatus === 1 ? "Active" : "Inactive"}?`,
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "Yes, change it!",
+    cancelButtonText: "Cancel",
+  });
+
+  if (result.isConfirmed) {
     try {
       await updateJobStatus(job.id, newStatus);
       setJobs((prev) =>
@@ -122,7 +133,22 @@ export default function JobOpeningsList() {
     } catch (err) {
       setNotification({ message: "Failed to update status.", type: "is-danger" });
     }
-  };
+  } else {
+    // Cancel pressed → reset switch visually
+    setJobs((prev) =>
+      prev.map((j) =>
+        j.id === job.id ? { ...j, status: job.status } : j
+      )
+    );
+    setFilteredJobs((prev) =>
+      prev.map((j) =>
+        j.id === job.id ? { ...j, status: job.status } : j
+      )
+    );
+    setNotification({ message: "Status change cancelled", type: "is-info" });
+  }
+};
+
 
   const handlePreview = async (id: string) => {
     try {
@@ -239,7 +265,7 @@ export default function JobOpeningsList() {
             <div className="column is-3" key={job.id}>
               <div className="card job-card">
                 <header className="card-header">
-                  <p className="card-header-title">{job.title}</p>
+                  <p className="card-header-title has-text-dark">{job.title}</p>
                 </header>
 
                 <div className="card-content">
