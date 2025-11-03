@@ -1,0 +1,394 @@
+/* =========================
+   🌍 GLOBAL PAGE STYLES
+========================= */
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: #f3f4f6;
+  font-family: "Inter", "Segoe UI", Arial, sans-serif;
+  color: #111827;
+}
+
+.bulk-upload-container {
+  width: 850px;
+  max-width: 95%;
+  margin: 2rem auto;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 2rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
+  transition: all 0.3s ease;
+}
+
+.bulk-upload-container h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #111827;
+  text-align: center;
+  margin-bottom: 1.8rem;
+}
+
+/* =========================
+   GRID LAYOUT
+========================= */
+.bulk-upload-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 1.8rem;
+  max-height: 500px;
+  /* overall container max height */
+  position: relative;
+}
+
+.upload-progress-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: none;
+}
+
+.upload-progress-list {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.upload-actions {
+  flex-shrink: 0;
+  /* keep button visible */
+  margin-top: 0.8rem;
+  display: flex;
+  justify-content: center;
+}
+
+
+/* =========================
+   DROP ZONE
+========================= */
+.drop-zone {
+  border: 2px dashed #4f46e5;
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+  background: #fafafa;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  min-height: 180px;
+  /* smaller default height */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.drop-zone:hover {
+  background: #f5f5ff;
+  border-color: #4338ca;
+}
+
+.drop-zone p span {
+  color: #4f46e5;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.centered-drop-zone {
+  min-height: 220px;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+/* =========================
+   UPLOAD PROGRESS SIDE
+========================= */
+.upload-progress-side {
+  display: flex;
+  flex-direction: column;
+  padding-left: 10px;
+  overflow-x: hidden;
+  gap: 1rem;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+/* =========================
+   FILE ITEM
+========================= */
+.file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 0.8rem 1rem;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  opacity: 0;
+  animation: fadeSlideIn 0.5s forwards;
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.file-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.file-details {
+  flex: 1;
+}
+
+.file-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #374151;
+  word-break: break-word;
+
+  /* Truncate long names */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 380px;
+  /* adjust based on your layout */
+  display: inline-block;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+/* Optional: Add a subtle hover underline to indicate tooltip */
+.file-name:hover {
+  text-decoration: underline dotted #9ca3af;
+  overflow: visible;
+}
+
+
+.file-meta {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-top: 0.2rem;
+}
+
+/* =========================
+   PROGRESS BAR
+========================= */
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  border-radius: 6px;
+  background: #e5e7eb;
+  margin-top: 6px;
+  overflow: hidden;
+}
+
+.progress-inner {
+  height: 6px;
+  border-radius: 6px;
+  transition: width 0.35s ease-in-out, background 0.3s ease;
+}
+
+.progress-blue {
+  background: #3b82f6;
+}
+
+.progress-green {
+  background: #16a34a;
+}
+
+.progress-red {
+  background: #dc2626;
+}
+
+/* =========================
+   CANCEL BUTTON
+========================= */
+.cancel-btn {
+  background: transparent;
+  border: none;
+  color: #dc2626;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-left: 0.8rem;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.cancel-btn:hover {
+  color: #b91c1c;
+  transform: scale(1.1);
+}
+
+/* =========================
+   OVERALL PROGRESS
+========================= */
+.overall-progress {
+  margin-top: 1.2rem;
+}
+
+.overall-progress-bar {
+  width: 100%;
+  height: 10px;
+  background: #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 0.4rem;
+}
+
+.overall-progress-inner {
+  height: 10px;
+  background: #4f46e5;
+  border-radius: 12px;
+  transition: width 0.4s ease;
+}
+
+.overall-progress p {
+  font-size: 0.85rem;
+  color: #374151;
+  text-align: center;
+}
+
+/* =========================
+   START UPLOAD BUTTON (fixed below scroll)
+========================= */
+.upload-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.8rem;
+}
+
+.upload-actions-fixed {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  /* adds spacing between buttons */
+  margin-top: 1.5rem;
+  position: sticky;
+  bottom: 0;
+  background: #ffffff;
+  padding: 1rem 0;
+  border-top: 1px solid #e5e7eb;
+  z-index: 10;
+}
+
+/* ✅ Start Upload Button */
+.start-upload-btn {
+  background: #4f46e5;
+  color: white;
+  font-weight: 600;
+  padding: 0.7rem 1.5rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: all 0.25s ease, transform 0.25s ease;
+}
+
+.start-upload-btn:hover {
+  background: #4338ca;
+  transform: translateY(-2px);
+}
+
+.start-upload-btn:disabled {
+  background: #a5b4fc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ❌ Cancel All Button */
+.cancel-upload-btn {
+  background: transparent;
+  color: #dc2626;
+  font-weight: 600;
+  padding: 0.7rem 1.5rem;
+  border-radius: 8px;
+  border: 2px solid #dc2626;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: all 0.25s ease, transform 0.25s ease;
+}
+
+.cancel-upload-btn:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+  transform: translateY(-2px);
+}
+
+.cancel-upload-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: transparent;
+  transform: none;
+}
+
+
+/* =========================
+   EMPTY STATE TEXT
+========================= */
+.empty-text {
+  text-align: center;
+  color: #9ca3af;
+  font-style: italic;
+  margin-top: 1rem;
+}
+
+/* =========================
+   RESPONSIVE DESIGN
+========================= */
+@media (max-width: 900px) {
+  .bulk-upload-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .file-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .cancel-btn {
+    margin-top: 0.5rem;
+    margin-left: 0;
+  }
+
+  .upload-progress-side {
+    max-height: 300px;
+  }
+}
+
+@media (max-width: 500px) {
+  .drop-zone {
+    padding: 1rem;
+    font-size: 13px;
+    min-height: 180px;
+  }
+
+  .file-name {
+    font-size: 0.9rem;
+  }
+
+  .file-meta {
+    font-size: 0.75rem;
+  }
+
+  .start-upload-btn {
+    width: 100%;
+    padding: 0.6rem;
+  }
+}

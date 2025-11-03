@@ -3,6 +3,7 @@ import os
 # from pydantic import BaseSettings
 from pydantic_settings import BaseSettings
 from functools import lru_cache
+from typing import Optional 
 
 class Settings(BaseSettings):
     # ========================
@@ -26,7 +27,7 @@ class Settings(BaseSettings):
     # ========================
     MONGO_URI: str
     MONGO_DB_NAME: str
-    ASTRA_DB_API_KEY: str = None  # optional Cassandra/Astra
+    ASTRA_DB_API_KEY: Optional[str] = None
 
     # ========================
     # Security / JWT
@@ -39,12 +40,12 @@ class Settings(BaseSettings):
     # ========================
     # OAuth / SSO
     # ========================
-    GOOGLE_CLIENT_ID: str = None
-    GOOGLE_CLIENT_SECRET: str = None
-    KEKA_CLIENT_ID: str = None
-    KEKA_CLIENT_SECRET: str = None
-    MS_CLIENT_ID: str = None
-    MS_CLIENT_SECRET: str = None
+    GOOGLE_CLIENT_ID: Optional[str] = None
+    GOOGLE_CLIENT_SECRET: Optional[str] = None
+    KEKA_CLIENT_ID: Optional[str] = None
+    KEKA_CLIENT_SECRET: Optional[str] = None
+    MS_CLIENT_ID: Optional[str] = None
+    MS_CLIENT_SECRET: Optional[str] = None
     
     # ========================
     # GEMINI (LLM)
@@ -58,10 +59,10 @@ class Settings(BaseSettings):
     # ========================
     # Email / Notifications
     # ========================
-    SMTP_HOST: str = None
-    SMTP_PORT: int = 587
     SMTP_USER: str = None
     SMTP_PASSWORD: str = None
+    SMTP_HOST: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
 
     # ========================
     # Rate Limiting
@@ -73,3 +74,4 @@ class Settings(BaseSettings):
         env_file = ".env"
 
 settings = Settings()
+

@@ -1,3 +1,4 @@
+# backend\app\services\llm.py
 import google.generativeai as genai
 from app.core.config import settings
 from app.models.job_ai import JobAIRequest, JobAISuggestion

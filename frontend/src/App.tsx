@@ -8,6 +8,8 @@ import JobOpenings from "./pages/JobOpenings";
 import JobOpeningsList from "./pages/JobOpeningsList";
 import ThankYouPage from "./pages/ThankYouPage";
 import ResumeScoringDashboard from "./pages/ResumeScoringDashboard";
+import BulkResumeUpload from "./pages/BulkResumeUpload";
+import VoiceInterviewsPage from "./pages/VoiceInterview/VoiceInterviewsPage";
 
 function App() {
   return (
@@ -24,6 +26,8 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/thank-you" element={<ThankYouPage />} />
           <Route path="/resume-scoring" element={<ResumeScoringDashboard />} />
+          <Route path="/bulk-resume-upload" element={<BulkResumeUpload />} />
+          <Route path="/voice-interviews" element={<VoiceInterviewsPage  />} />
         </Routes>
       </div>
     </>

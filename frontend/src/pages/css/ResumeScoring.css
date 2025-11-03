@@ -83,11 +83,11 @@
 
 /* Optional: control width of each column */
 .candidate-table th:nth-child(1),
-.candidate-table td:nth-child(1) { width: 12%; } /* Name */
+.candidate-table td:nth-child(1) { width: 10%; } /* Name */
 .candidate-table th:nth-child(2),
 .candidate-table td:nth-child(2) { width: 18%; } /* Email */
 .candidate-table th:nth-child(3),
-.candidate-table td:nth-child(3) { width: 12%; } /* Phone */
+.candidate-table td:nth-child(3) { width: 8%; } /* score */
 .candidate-table th:nth-child(4),
 .candidate-table td:nth-child(4) { width: 10%; } /* Applied At */
 .candidate-table th:nth-child(5),
@@ -437,3 +437,338 @@
   border-color: #3b82f6;
   font-weight: bold;
 }
+
+
+/* Fitmenet status button */
+/* Base badge look */
+.fitment-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 20px;
+  color: #fff;
+  text-transform: capitalize;
+}
+
+/* Variants */
+.fitment-badge.strong {
+  background-color: #28a745; /* green */
+}
+
+.fitment-badge.moderate {
+  background-color: #ffc107; /* yellow */
+  color: #000; /* better contrast */
+}
+
+.fitment-badge.poor {
+  background-color: #dc3545; /* red */
+}
+
+/* Default / fallback */
+.fitment-badge.default {
+  background-color: #6c757d; /* grey */
+}
+
+/* ---------- Sentiment Badges ---------- */
+.sentiment-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 20px;
+  color: #fff;
+  text-transform: capitalize;
+}
+
+.sentiment-badge.positive {
+  background-color: #28a745; /* green */
+}
+.sentiment-badge.neutral {
+  background-color: #6c757d; /* grey */
+}
+.sentiment-badge.negative {
+  background-color: #dc3545; /* red */
+}
+.sentiment-badge.default {
+  background-color: #adb5bd; /* lighter grey */
+}
+
+/* ---------- Tone Badges ---------- */
+.tone-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 20px;
+  text-transform: capitalize;
+}
+
+.tone-badge.professional {
+  background-color: #0d6efd; /* blue */
+  color: #fff;
+}
+.tone-badge.casual {
+  background-color: #ffc107; /* yellow */
+  color: #000;
+}
+.tone-badge.friendly {
+  background-color: #20c997; /* teal/green */
+  color: #fff;
+}
+.tone-badge.default {
+  background-color: #adb5bd; /* lighter grey */
+  color: #fff;
+}
+
+
+
+/* --- Chat Tab / AI Chat --- */
+.chat-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.chat-tab h4 {
+  font-size: 1.4rem;
+  color: #222;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+/* Chat Box Container */
+.chat-box {
+  display: flex;
+  flex-direction: column;
+  height: 450px;
+  background-color: #fff;
+  border-radius: 20px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+  transition: all 0.3s ease;
+}
+
+.chat-box:hover {
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.08);
+}
+
+/* Messages Area */
+.chat-box .messages {
+  flex: 1;
+  padding: 1rem 1.2rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  background-color: #f9fafc;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f9fafc;
+  scroll-behavior: smooth; /* smooth scrolling */
+}
+
+.chat-box .messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-box .messages::-webkit-scrollbar-thumb {
+  background-color: #c1c1c1;
+  border-radius: 10px;
+}
+
+.chat-box .messages::-webkit-scrollbar-track {
+  background-color: #f9fafc;
+}
+
+/* Individual Messages */
+.chat-box .ai-message,
+.chat-box .user-message {
+  max-width: 70%;
+  padding: 0.6rem 1rem;
+  border-radius: 25px;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  position: relative;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  transition: all 0.2s ease;
+}
+
+/* AI Message */
+.chat-box .ai-message {
+  background: #4a90e2;
+  color: #fff;
+  align-self: flex-start;
+  border-bottom-left-radius: 5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  animation: fadeIn 0.3s ease;
+}
+
+/* User Message */
+.chat-box .user-message {
+  background-color: #e8ebf1;
+  color: #333;
+  align-self: flex-end;
+  border-bottom-right-radius: 5px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
+  animation: fadeIn 0.3s ease;
+}
+
+/* AI Typing */
+.chat-box .typing {
+  font-style: italic;
+  color: #777;
+  align-self: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+/* Chat Input Area */
+.chat-box .chat-input {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.7rem 1rem;
+  border-top: 1px solid #e0e0e0;
+  background-color: #fff;
+}
+
+/* Make AI label bold and black */
+.chat-box .ai-message b {
+  font-weight: 700;
+  color: #ffc107; /* black color */
+}
+
+/* Optional: user label styling too */
+.chat-box .user-message b {
+  font-weight: 700;
+  color: #000; /* black color for user label */
+}
+
+
+/* Input Field */
+.chat-box input {
+  flex: 1;
+  padding: 0.55rem 1rem;
+  border-radius: 25px;
+  border: 1px solid #ccc;
+  font-size: 0.95rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.chat-box input:focus {
+  border-color: #4a90e2;
+  box-shadow: 0 0 6px rgba(74, 144, 226, 0.25);
+}
+
+/* Send Button */
+.chat-box button {
+  padding: 0 1.2rem;
+  background-color: #4a90e2;
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.chat-box button:hover:not(:disabled) {
+  background-color: #357ABD;
+}
+
+.chat-box button:disabled {
+  background-color: #a0c4f7;
+  cursor: not-allowed;
+}
+
+/* Icon inside messages */
+.chat-box .messages .icon {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 6px;
+  font-size: 16px;
+  animation: bounce 1.2s infinite;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  0% { opacity: 0; transform: translateY(5px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+/* --- Approve/Reject Buttons --- */
+.approve-btn {
+  background-color: #4caf50;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.reject-btn {
+  background-color: #f44336;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.approve-btn:hover {
+  background-color: #45a049;
+}
+
+.reject-btn:hover {
+  background-color: #e53935;
+}
+
+/* Candidate Status Tags - Professional Look */
+.tag-approved {
+  background-color: #48c774; /* soft green */
+  color: #ffffff;
+  border-radius: 9999px; /* fully rounded pill */
+  padding: 0.35em 0.8em;
+  font-weight: 500;
+  font-size: 0.875rem;
+  display: inline-block;
+  text-align: center;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.tag-rejected {
+  background-color: #f14668; /* soft red/pink */
+  color: #ffffff;
+  border-radius: 9999px;
+  padding: 0.35em 0.8em;
+  font-weight: 500;
+  font-size: 0.875rem;
+  display: inline-block;
+  text-align: center;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.tag-pending {
+  background-color: #7a7a7a; /* muted gray */
+  color: #ffffff;
+  border-radius: 9999px;
+  padding: 0.35em 0.8em;
+  font-weight: 500;
+  font-size: 0.875rem;
+  display: inline-block;
+  text-align: center;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+

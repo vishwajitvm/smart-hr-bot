@@ -1,3 +1,4 @@
+# backend/app/utils/text_extractor.py
 import io
 from pdfminer.high_level import extract_text
 from docx import Document

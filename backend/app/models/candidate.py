@@ -1,6 +1,6 @@
 # app/models/candidate.py
 from pydantic import BaseModel, EmailStr, ConfigDict, Field, model_validator
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Union
 
 class CandidateBase(BaseModel):
     # Pydantic v2 config
@@ -10,7 +10,8 @@ class CandidateBase(BaseModel):
     email: Optional[EmailStr] = None
     phone: Optional[str] = ""
     location: Optional[str] = ""
-    years_of_experience: Optional[str] = ""
+    # years_of_experience: Optional[str] = ""
+    years_of_experience: Optional[Union[str, int]] = ""
 
     # avoid mutable defaults
     skills: List[str] = Field(default_factory=list)
@@ -24,6 +25,13 @@ class CandidateBase(BaseModel):
 
     resume_id: Optional[str] = None
     resume_url: Optional[str] = None
+    
+    # Candidate progression statuses
+    # 0 = Pending, 1 = Approved, 2 = Rejected
+    stage_resume_review_status: int = 0
+    stage_ai_voice_call_status: int = 0
+    stage_ai_screening_status: int = 0
+
 
     # bucket for any extra/unstructured fields (projects, education, etc.)
     extra_data: Dict[str, Any] = Field(default_factory=dict)

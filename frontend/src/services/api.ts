@@ -151,13 +151,98 @@ export const generateCandidateScore = async (
 /* -------------------------------------------------------------------------- */
 /*                   Candidate Listing With Score APIs                        */
 /* -------------------------------------------------------------------------- */
-export const fetchCandidatesWithScores = (page = 1, limit = 10) =>
-  api.post("/candidates-listing-with-score/list", { page, limit });
+// export const fetchCandidatesWithScores = (page = 1, limit = 10) =>
+//   api.post("/candidates-listing-with-score/list", { page, limit });
+
+// services/api.ts
+export const fetchCandidatesWithScores = (
+  page = 1,
+  limit = 10,
+  filters: any = {}
+) => {
+  return api.post("/candidates-listing-with-score/list", {
+    page,
+    limit,
+    filters,
+  });
+};
+
 
 export const fetchCandidateWithScoreById = (candidateId: string) =>
   api.post("/candidates-listing-with-score/get-candidate-by-id", {
     candidate_id: candidateId,
   });
+
+/* -------------------------------------------------------------------------- */
+/*                        Candidate Chat (AI Recruiter) API                   */
+/* -------------------------------------------------------------------------- */
+export async function candidateChat(candidateData: any, question: string) {
+  return api.post("/candidates-listing-with-score/chat", {
+    candidate: candidateData,
+    question,
+  });
+}
+
+/* -------------------------------------------------------------------------- */
+/*                        Candidate Approval / Rejection APIs                 */
+/* -------------------------------------------------------------------------- */
+
+export const approveCandidate = async (candidateId: string) => {
+  return api.post(`/candidates-listing-with-score/${candidateId}/approve`);
+};
+
+export const rejectCandidate = async (candidateId: string) => {
+  return api.post(`/candidates-listing-with-score/${candidateId}/reject`);
+};
+
+/* -------------------------------------------------------------------------- */
+/*            Approved Candidates Listing With Score API                      */
+/* -------------------------------------------------------------------------- */
+export const fetchApprovedCandidates = (
+  page: number = 1,
+  limit: number = 20
+) => {
+  return api.post("/candidates-listing-with-score/approved-candidates-list", {
+    page,
+    limit,
+  });
+};
+
+/* -------------------------------------------------------------------------- */
+/*                           Multi-file Bulk Upload                           */
+/* -------------------------------------------------------------------------- */
+
+export const uploadBulkResumes = async (files: File[], onProgress?: (percent: number) => void) => {
+  const formData = new FormData();
+
+  files.forEach((file) => {
+    formData.append("files[]", file);
+  });
+
+  return api.post("/resume/bulk-upload", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+    onUploadProgress: (event) => {
+      if (event.total) {
+        const percent = Math.round((event.loaded * 100) / event.total);
+        if (onProgress) onProgress(percent);
+      }
+    },
+  });
+};
+
+
+/* -------------------------------------------------------------------------- */
+/*                      AI Voice Interview Initiation API                     */
+/* -------------------------------------------------------------------------- */
+export const initiateVoiceInterview = async (candidateData: Record<string, any>) => {
+  return api.post("/ai/voice-interview/start", candidateData, {
+    headers: { "Content-Type": "application/json" },
+  });
+};
+
+
+
+
 
 
 export default api;
